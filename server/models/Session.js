@@ -11,4 +11,5 @@ const SessionSchema = new mongoose.Schema({
   endTime: Date
 }, { timestamps: true });
 
-export const Session = mongoose.model("Session", SessionSchema);
+const Session = mongoose.model("Session", SessionSchema);
+module.exports = Session;

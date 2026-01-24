@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const router = express.Router();
 const Faculty = require('../models/Faculty');
 const Session = require('../models/Session');
+const auth = require('../Middlewares/auth');
 
 // faculty signup
 router.post("/signup", async (req, res) => {
@@ -58,7 +59,7 @@ router.post("/login", async (req, res) => {
 
 // session routes
 // session start
-router.post("/openSession", auth, async (req, res) => {
+router.post("/openSession", async (req, res) => {
   const { year, branch, subject, mode } = req.body;
   
   // existing session close
@@ -82,7 +83,7 @@ router.post("/openSession", auth, async (req, res) => {
 });
 
 // Close session
-router.post("/closeSession", auth, async (req, res) => {
+router.post("/closeSession", async (req, res) => {
   const session = await Session.findOneAndUpdate(
     { facultyId: req.faculty.facultyId, isActive: true },
     { isActive: false, endTime: new Date() },
@@ -97,7 +98,7 @@ router.post("/closeSession", auth, async (req, res) => {
 });
 
 // Check active session (for dashboard)
-router.get("/activeSession", auth, async (req, res) => {
+router.get("/activeSession", async (req, res) => {
   const session = await Session.findOne({ 
     facultyId: req.faculty.facultyId, 
     isActive: true 
