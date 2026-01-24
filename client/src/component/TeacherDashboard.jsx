@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import useToast from "../hooks/useToast";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -9,23 +10,24 @@ const TeacherDashboard = () => {
   const [rollNumber, setRollNumber] = useState("");
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(false);
+  const {showError} = useToast();
 
   const fetchByRollNumber = async () => {
     if (!rollNumber) {
-      alert("Enter roll number");
+      showError("Enter roll number");
       return;
     }
 
     try {
       setLoading(true);
-      const res = await axios.post("http://localhost:5000/dashboard", {
+      const res = await axios.post("http://localhost:8080/dashboard", {
         rollno: rollNumber,
       });
 
       setStudent(res.data.data);
     } catch (err) {
       console.error(err);
-      alert("No data found");
+      showError("No data found");
       setStudent(null);
     } finally {
       setLoading(false);

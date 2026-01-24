@@ -33,7 +33,7 @@ function Home() {
       >
         <div className="container">
           <div className="row align-items-center">
-            {/* LEFT SIDE TEXT */}
+            {/* metadaata */}
             <div className="col-md-6 mb-4">
               <span className="badge bg-secondary px-3 py-2 mb-3">
                 Next-gen Attendance
@@ -49,7 +49,6 @@ function Home() {
               </p>
             </div>
 
-            {/* RIGHT SIDE IMAGE IN ROUNDED CARD */}
             <div className="col-md-6">
               <div
                 style={{

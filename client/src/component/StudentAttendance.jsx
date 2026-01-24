@@ -1,5 +1,5 @@
-import React, { useState, useRef, useContext, useEffect } from "react";
-import ServerContext from "../Context/ServerContext";
+import React, { useState, useRef, useEffect } from "react";
+import useToast from "../hooks/useToast";
 
 import {
   loadModels,
@@ -11,6 +11,7 @@ export default function StudentAttendance() {
   const [cameraOn, setCameraOn] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const {showSuccess, showError} = useToast();
 
   const {
     roll,
@@ -19,7 +20,7 @@ export default function StudentAttendance() {
     setSubject1,
     setDescriptor,
     sendFaceDescriptor,
-  } = useContext(ServerContext);
+  } = useState('');
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -66,12 +67,12 @@ export default function StudentAttendance() {
     e.preventDefault();
 
     if (!roll || !subject1) {
-      alert("Please fill all fields");
+      showError("Please fill all fields");
       return;
     }
 
     if (!cameraOn) {
-      alert("Start camera first");
+      showError("Start camera first");
       return;
     }
 
@@ -81,7 +82,7 @@ export default function StudentAttendance() {
       const detection = await detectFace(videoRef.current);
 
       if (!detection || !detection.descriptor) {
-        alert("No clear face detected. Try again.");
+        showError("No clear face detected. Try again.");
         return;
       }
 
@@ -91,10 +92,10 @@ export default function StudentAttendance() {
       // Send to backend
       await sendFaceDescriptor();
 
-      alert("Attendance marked successfully!");
+      showSuccess("Attendance marked successfully!");
     } catch (err) {
       console.error(err);
-      alert("Face capture failed");
+      showError("Face capture failed");
     } finally {
       setLoading(false);
     }
@@ -103,7 +104,7 @@ export default function StudentAttendance() {
   return (
     <div className="d-flex justify-content-center align-items-center py-4">
       <div className="card p-4 shadow" style={{ width: 400 }}>
-        <h3 className="text-center mb-3">🎓 Smart Attendance</h3>
+        <h3 className="text-center mb-3">🎓 Mark Your Presence</h3>
 
         <form onSubmit={handleSubmit}>
           <input

@@ -1,22 +1,29 @@
 import React, { useState } from 'react'
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import useToast from '../hooks/useToast';
 
-function FacultyRegistration() {
+export default function FacultyRegistration() {
     const navigate = useNavigate();
     const [facultyId, setFacultyId] = useState("");
     const [password, setPassword] = useState("");
+    const { showSuccess, showError } = useToast();
 
-    const handleRegister = async () => {
-        const res = await axios.post(
-          "http://localhost:5000/FacultySignUp",
-          { facultyId, password }
-        );
-
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("facultyId", res.data.userId);
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        try{
+            const res = await axios.post(
+              "http://localhost:8080/faculty/signup",
+              { facultyId, password }
+            );
     
-        navigate("/Faculty-Dashboard");
+            localStorage.setItem("token", res.data.token);
+            localStorage.setItem("facultyId", res.data.userId);
+            showSuccess('Registration Successful!')
+            navigate("/teacher-dashboard");
+        } catch(error){
+            showError(error.response?.data?.error || 'Registration failed');
+        }
     };
 
   return (
@@ -38,9 +45,8 @@ function FacultyRegistration() {
                         </div>
                         <button type="submit" className="btn btn-success">Submit</button>
                     </div>
-                </form>
+            </form>
     </div>
   )
 }
 
-export default FacultyRegistration

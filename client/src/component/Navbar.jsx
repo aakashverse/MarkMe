@@ -1,23 +1,25 @@
 import { Link, useNavigate } from "react-router-dom";
+import useToast from "../hooks/useToast";
 
 export default function Navbar() {
+  const {showSuccess} = useToast();
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.clear();
+    showSuccess('Logged out successfuly!')
     navigate("/"); // cleaner than reload
   };
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
       <div className="container">
-        {/* LOGO */}
         <Link className="navbar-brand fw-bold fs-4 text-dark" to="/">
           Mark_Me
         </Link>
 
-        {/* TOGGLE */}
+        {/* toggle */}
         <button
           className="navbar-toggler"
           type="button"
@@ -27,7 +29,7 @@ export default function Navbar() {
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        {/* MENU */}
+        {/* menu */}
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav mx-auto gap-3">
             <li className="nav-item">
@@ -41,21 +43,21 @@ export default function Navbar() {
                 </Link>
               </li>
 
-
             <li className="nav-item">
               <Link className="nav-link fw-semibold" to="/about">About</Link>
             </li>
           </ul>
 
-          {/* RIGHT SIDE */}
           <div className="d-flex gap-2 align-items-center">
+            {token && (
+              <Link to="/student-login" className="btn btn-outline-primary">
+                Mark Att.
+              </Link>
+            )}
 
-            {/* STUDENT */}
-            <Link to="/student-login" className="btn btn-outline-primary">
-              Student
-            </Link>
+            {/* jaroori -> token tracks teacher avail. not student */}
 
-            {/* if logged in */}
+            {/* if faculty logged in */}
             {token && (
               <>
                 <Link to="/student-registration" className="btn btn-dark">
@@ -74,11 +76,8 @@ export default function Navbar() {
 
             {!token && (
               <>
-                <Link to="/Faculty-Login" className="btn btn-success">
-                  Faculty Login
-                </Link>
-                <Link to="/Faculty-Registration" className="btn btn-secondary">
-                  Faculty Signup
+                <Link to="/faculty-login" className="btn btn-success">
+                  Faculty Signup / Login
                 </Link>
               </>
             )}

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import useToast from "../hooks/useToast";
 
 function FacultyLogin() {
   const navigate = useNavigate();
@@ -8,12 +9,13 @@ function FacultyLogin() {
   const [facultyId, setFacultyId] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const {showSuccess, showError} = useToast();
 
   const handleLogIn = async (e) => {
     e.preventDefault();
 
     if (!facultyId || !password) {
-      alert("Please fill all fields");
+      showError("Please fill all fields");
       return;
     }
 
@@ -21,20 +23,20 @@ function FacultyLogin() {
       setLoading(true);
 
       const res = await axios.post(
-        "http://localhost:5000/FacultyLogin",
+        "http://localhost:8080/login",
         { facultyId, password },
         { withCredentials: true }
       );
 
-      // 🔐 STORE TOKEN
+      // store token
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("facultyId", res.data.facultyId);
 
-      alert("✅ Login successful");
+      showSuccess("Login successful");
       navigate("/Faculty-Dashboard");
 
     } catch (error) {
-      alert(error?.response?.data?.error || "Login failed");
+      showError(error?.response?.data?.error || "Login failed");
     } finally {
       setLoading(false);
     }

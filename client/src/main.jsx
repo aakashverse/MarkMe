@@ -1,10 +1,10 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Toaster } from 'react-hot-toast'
+
 import './index.css'
 import App from './App.jsx'
-import Student from './component/Student.jsx'
-import ServerContextProvider from './Context/ServerContextProvider.jsx'
 import Home from './component/Home.jsx'
 import FacultySession from "./component/FacultySession.jsx";
 import StudentAttendance from './component/StudentAttendance.jsx'
@@ -15,22 +15,16 @@ import FacultyLogin from './component/FacultyLogin.jsx'
 import FacultyRegistration from './component/FacultyRegistration.jsx'
 
 
-let router = createBrowserRouter([
+  let router = createBrowserRouter([
   {
     path: "/",
     element: (
-      <ServerContextProvider>
         <App />
-      </ServerContextProvider>
     ),
     children: [
       {
         path: "/",
         element: <Home />,
-      },
-      {
-        path: "/student",
-        element: <Student />,
       },
       {
         path: "/faculty-session",
@@ -53,11 +47,11 @@ let router = createBrowserRouter([
         element: <StudentRegistration />
       },
       {
-        path: "/Faculty-Login",
+        path: "/faculty-login",
         element: <FacultyLogin />
       },
       {
-        path: "/Faculty-Registration",
+        path: "/faculty-registration",
         element: <FacultyRegistration />
       }
     ],
@@ -66,6 +60,7 @@ let router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <Toaster position="top-center" />
     <RouterProvider router={router}></RouterProvider>
   </StrictMode>,
 )

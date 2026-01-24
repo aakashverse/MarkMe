@@ -1,6 +1,6 @@
-import React, { useState, useRef, useContext, useEffect } from "react";
-import ServerContext from "../Context/ServerContext";
+import React, { useState, useRef, useEffect } from "react";
 import { loadModels, detectFace, drawBoundingBox } from "../faceDetection";
+import useToast from "../hooks/useToast";
 
 export default function StudentRegistration() {
   const {
@@ -12,15 +12,18 @@ export default function StudentRegistration() {
     setRoll2,
     setDescriptor,
     createStudent,
-  } = useContext(ServerContext);
+  } = useState('');
 
   const [cameraOn, setCameraOn] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
+  // const [isStudent, setisStudent] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const intervalRef = useRef(null);
+
+  const {showSuccess, showError} = useToast();
 
   // load models
   useEffect(() => {
@@ -63,12 +66,12 @@ export default function StudentRegistration() {
     e.preventDefault();
 
     if (!year2 || !branch2 || !roll2) {
-      alert("Please fill all fields");
+      showError("Please fill all fields");
       return;
     }
 
     if (!cameraOn) {
-      alert("Start camera first");
+      showError("Start camera first");
       return;
     }
 
@@ -78,7 +81,7 @@ export default function StudentRegistration() {
       const detection = await detectFace(videoRef.current);
 
       if (!detection || !detection.descriptor) {
-        alert("No clear face detected. Try again.");
+        showError("No clear face detected. Try again.");
         return;
       }
 
@@ -87,7 +90,8 @@ export default function StudentRegistration() {
       setDescriptor(descriptorArray);
       await createStudent(descriptorArray);
 
-      alert("Student registered successfully :)");
+      showSuccess("Student registered successfully :)");
+      // isStudent(true);
       setCameraOn(false);
     } catch (err) {
       console.error(err);
