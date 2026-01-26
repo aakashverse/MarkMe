@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import useToast from "../hooks/useToast";
+import axios from "axios";
 
 import {
   loadModels,
@@ -8,45 +9,75 @@ import {
 } from "../faceDetection";
 
 export default function StudentAttendance() {
+  const [roll, setRoll] = useState('');            
+  const [subject1, setSubject1] = useState('');      
+  const [descriptor, setDescriptor] = useState(null); 
+
   const [cameraOn, setCameraOn] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState(null);
   const {showSuccess, showError} = useToast();
-
-  const {
-    roll,
-    subject1,
-    setRoll,
-    setSubject1,
-    setDescriptor,
-    sendFaceDescriptor,
-  } = useState('');
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const intervalRef = useRef(null);
+
+  // check if session is active for atten.
+  useEffect(() => {
+  const checkSession = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        "http://localhost:5000/student/activeSession",
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (res.data.hasActiveSession) {
+        setActiveSessionId(res.data.sessionId);
+        setSubject1(res.data.subject || "");
+      } else {
+        setActiveSessionId(null);
+      }
+    } catch (err) {
+      console.log("No active session");
+      setActiveSessionId(null);
+    }
+  };
+
+  checkSession();
+  const interval = setInterval(checkSession, 5000); // poll every 5s
+
+  return () => clearInterval(interval);
+}, []);
 
   // load modesls
   useEffect(() => {
     loadModels().then(() => setModelsLoaded(true));
   }, []);
 
+
   // camera
   useEffect(() => {
     let stream;
-
-    async function startCamera() {
-      if (cameraOn) {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
+    if (cameraOn) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(s => {
+          stream = s;
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        })
+        .catch(err => {
+          showError('Camera access denied');
+          setCameraOn(false);
+        });
     }
-
-    startCamera();
-
+    
     return () => {
-      if (stream) stream.getTracks().forEach((t) => t.stop());
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
     };
   }, [cameraOn]);
 
@@ -71,6 +102,11 @@ export default function StudentAttendance() {
       return;
     }
 
+    if (!activeSessionId) {
+      showError("No active session. Ask faculty to start session first.");
+      return;
+    }
+
     if (!cameraOn) {
       showError("Start camera first");
       return;
@@ -81,18 +117,28 @@ export default function StudentAttendance() {
 
       const detection = await detectFace(videoRef.current);
 
-      if (!detection || !detection.descriptor) {
+      if (!detection?.descriptor) {
         showError("No clear face detected. Try again.");
         return;
       }
 
-      // Save descriptor 
-      setDescriptor(Array.from(detection.descriptor));
+      // Save descriptor
+      const faceDescriptor = Array.from(detection.descriptor);
 
       // Send to backend
-      await sendFaceDescriptor();
+      const token = localStorage.getItem('token');  
+      await axios.post('http://localhost:5000/student/markAttendance', {
+        rollno: roll,
+        subject: subject1,
+        sessionId: activeSessionId,
+        descriptor: faceDescriptor
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
-      showSuccess("Attendance marked successfully!");
+      showSuccess(`Attendance marked for ${subject1}`);
+      setRoll('');  
+      setSubject1('');
     } catch (err) {
       console.error(err);
       showError("Face capture failed");
@@ -101,7 +147,7 @@ export default function StudentAttendance() {
     }
   };
 
-  return (
+   return (
     <div className="d-flex justify-content-center align-items-center py-4">
       <div className="card p-4 shadow" style={{ width: 400 }}>
         <h3 className="text-center mb-3">🎓 Mark Your Presence</h3>
@@ -120,13 +166,21 @@ export default function StudentAttendance() {
             onChange={(e) => setSubject1(e.target.value)}
           >
             <option value="">Select Subject</option>
-            <option>DSA</option>
-            <option>OS</option>
+            <option>Data Structures & Algorithms</option>
+            <option>Operating System</option>
             <option>DBMS</option>
-            <option>CN</option>
+            <option>Computer Networks</option>
+            <option>OOPS</option>
           </select>
 
-          {!cameraOn && (
+          {/* // cam status */}
+          {!activeSessionId && (
+            <div className="alert alert-warning">
+              No active session. Ask faculty to start session first.
+            </div>
+          )}
+
+          {!cameraOn ? (
             <button
               type="button"
               className="btn btn-success w-100 mb-2"
@@ -134,17 +188,27 @@ export default function StudentAttendance() {
             >
               📸 Start Camera
             </button>
-          )}
-
-          {cameraOn && (
-            <div style={{ position: "relative" }}>
-              <video ref={videoRef} width="100%" autoPlay muted />
+          ) : (
+            <div style={{ position: "relative", height: "200px" }}>
+              <video 
+                ref={videoRef} 
+                width="100%" 
+                height="200px"
+                autoPlay 
+                muted 
+                playsInline  // mobile fix
+                style={{ borderRadius: "10px" }}
+              />
               <canvas
                 ref={canvasRef}
+                width="100%"
+                height="200px"
                 style={{
                   position: "absolute",
                   top: 0,
                   left: 0,
+                  borderRadius: "10px",
+                  pointerEvents: "none"
                 }}
               />
             </div>
@@ -153,7 +217,7 @@ export default function StudentAttendance() {
           <button
             type="submit"
             className="btn btn-primary w-100 mt-3"
-            disabled={loading}
+            disabled={loading || !activeSessionId || !cameraOn}
           >
             {loading ? "Detecting..." : "✅ Capture Attendance"}
           </button>

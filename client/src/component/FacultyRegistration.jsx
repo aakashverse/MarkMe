@@ -13,7 +13,7 @@ export default function FacultyRegistration() {
         e.preventDefault();
         try{
             const res = await axios.post(
-              "http://localhost:8080/faculty/signup",
+              "http://localhost:5000/faculty/signup",
               { facultyId, password }
             );
     

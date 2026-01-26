@@ -1,18 +1,14 @@
 import React, { useState, useRef, useEffect } from "react";
 import { loadModels, detectFace, drawBoundingBox } from "../faceDetection";
 import useToast from "../hooks/useToast";
+import axios from "axios";
 
 export default function StudentRegistration() {
-  const {
-    year2,
-    branch2,
-    roll2,
-    setYear2,
-    setBranch2,
-    setRoll2,
-    setDescriptor,
-    createStudent,
-  } = useState('');
+  const [year2, setYear2] = useState("");
+  const [branch2, setBranch2] = useState("");
+  const [roll2, setRoll2] = useState("");
+  // const [descriptor, setDescriptor] = useState(null);
+
 
   const [cameraOn, setCameraOn] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
@@ -79,23 +75,32 @@ export default function StudentRegistration() {
       setLoading(true);
 
       const detection = await detectFace(videoRef.current);
-
-      if (!detection || !detection.descriptor) {
+      if (!detection?.descriptor) {
         showError("No clear face detected. Try again.");
         return;
       }
 
       const descriptorArray = Array.from(detection.descriptor);
-
-      setDescriptor(descriptorArray);
-      await createStudent(descriptorArray);
+      
+      const token = localStorage.getItem("token");
+      await axios.post("http://localhost:5000/student/register", {
+        year: year2,
+        branch: branch2,
+        rollno: roll2,
+        faceDescriptor: descriptorArray
+      },{
+        headers: { Authorization: `Bearer ${token}`}
+      });
 
       showSuccess("Student registered successfully :)");
       // isStudent(true);
       setCameraOn(false);
+      setYear2("");
+      setRoll2("");
+      setBranch2("");
     } catch (err) {
-      console.error(err);
-      alert("Registration failed :(");
+      console.error("Register Error:", err);
+      showError("Registration failed :(");
     } finally {
       setLoading(false);
     }

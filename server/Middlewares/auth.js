@@ -1,39 +1,29 @@
 const jwt = require('jsonwebtoken');
+const Faculty = require('../models/Faculty.models');
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET is not defined');
-}
-
-const authenticateToken = (req, res, next) => {
-  // read token from cookie
-  const token = req.cookies?.token;
-
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      message: 'Authentication required',
-    });
-  }
-
+module.exports = async (req, res, next) => {
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-
-    req.user = {
-      roll_no: decoded.roll_no,
-    };
-
-    next();
-  } catch (err) {
-    return res.status(403).json({
-      success: false,
-      message:
-        err.name === 'TokenExpiredError'
-          ? 'Session expired'
-          : 'Invalid token',
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // console.log('Decoded token:', decoded);  
+    
+    const faculty = await Faculty.findOne({ 
+      facultyId: decoded.facultyId
     });
+
+    if (!faculty) {
+      return res.status(401).json({ error: 'Faculty not found' });
+    }
+    
+    req.faculty = faculty;  
+    next();
+  } catch (error) {
+    console.error('Auth error:', error);
+    res.status(401).json({ error: 'Invalid token' });
   }
 };
-
-module.exports = authenticateToken;

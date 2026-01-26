@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const SessionSchema = new mongoose.Schema({
+const sessionSchema = new mongoose.Schema({
   facultyId: { type: String, required: true },
   year: String,
   branch: String,
@@ -11,5 +11,5 @@ const SessionSchema = new mongoose.Schema({
   endTime: Date
 }, { timestamps: true });
 
-const Session = mongoose.model("Session", SessionSchema);
+const Session = mongoose.model("Session", sessionSchema);
 module.exports = Session;

@@ -11,15 +11,22 @@ const StudentSchema = mongoose.Schema({
         },
         rollno: {
             type: Number,
+            unique: true,
             required: true,
         },
         attendance: {
-            type: Number,
-            default: 0,
+            type: [
+              {
+                subject: String,
+                total: {type: Number, default: 0 },
+                present: {type: Number, default: 0 }
+              }
+            ],
+            default: []
         },
         faceDescriptorCode: {
-            type: [String],
-            // required: true,
+            type: [Number],
+            required: true,
         },
         lat: {
             type: Number,

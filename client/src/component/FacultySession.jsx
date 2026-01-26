@@ -9,28 +9,53 @@ export default function FacultySession() {
   const [isOnline, setIsOnline] = useState(false);
 
   const [sessionOpen, setSessionOpen] = useState(false);
+  const [currentSession, setCurrentSession] = useState(null);
   const [seconds, setSeconds] = useState(0);
   const {showSuccess, showError} = useToast();
+
+   /* check session */
+  useEffect(() => {
+    if (currentSession?.startTime) {
+      const start = new Date(currentSession.startTime).getTime();
+      const now = Date.now();
+      setSeconds(Math.floor((now - start) / 1000));
+    }
+  }, [currentSession]);
+
+  // reset 
+  useEffect(() => {
+    setSubject("");
+  }, [year, branch]);
 
   const checkActiveSession = async() => {
     try{
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:8080/activeSession", {
+      const res = await axios.get("http://localhost:5000/faculty/activeSession", {
         headers: {Authorization: `Bearer ${token}`}
       });
 
       if(res.data.hasActiveSession){
         setSessionOpen(true);
+        setCurrentSession(res.data);
       }
     } catch(err){
-      console.log('No Active Session!');
+      console.log('No Active Session!', err);
+    } finally{
+      setSessionOpen(false);
     }
   }
 
-  /* check session */
+   
+  // timer
   useEffect(() => {
-    checkActiveSession();
-  },[]);
+    let interval;
+    if (sessionOpen) {
+      interval = setInterval(() => {
+        setSeconds(prev => prev + 1);
+      }, 1000);
+    }
+    return () => interval && clearInterval(interval);
+  }, [sessionOpen]);
 
   /* start session */
   const handleSubmit = async (e) => {
@@ -49,12 +74,13 @@ export default function FacultySession() {
     try {
       const token = localStorage.getItem("token");
 
-      await axios.post(
-        "http://localhost:8080/faculty/openSession",
+      const res = await axios.post(
+        "http://localhost:5000/faculty/openSession",
         { year, branch, subject, mode: isOnline ? "online" : "offline" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+      
+      setCurrentSession(res.data.session);
       setSessionOpen(true);
       showSuccess('Session initiated!')
       setSeconds(0);
@@ -72,7 +98,7 @@ export default function FacultySession() {
       const token = localStorage.getItem("token");
       
       await axios.post(
-        "http://localhost:8080/faculty/closeSession",
+        "http://localhost:5000/faculty/closeSession",
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -107,13 +133,13 @@ export default function FacultySession() {
               isOnline ? "bg-success text-white" : "bg-danger text-white"
             }`}
             style={{ cursor: "pointer" }}
-            onClick={() => setIsOnline(!isOnline)}
+            onClick={() => !sessionOpen && setIsOnline(!isOnline)}
           >
             {isOnline ? "🟢 Online Mode" : "🔴 Offline Mode"}
           </div>
         </div>
 
-        <form>
+        <form onSubmit={(e) => e.preventDefault()}>
           {/* year */}
           <div className="mb-3">
             <label className="form-label fw-semibold">Select Year</label>
@@ -145,14 +171,14 @@ export default function FacultySession() {
               <label className="form-label fw-semibold">Select Subject</label>
               <select className="form-select" value={subject} onChange={(e) => setSubject(e.target.value)}>
                 <option value="">Choose...</option>
-                <option>Data Structures</option>
-                <option>Operating Systems</option>
+                <option>Data Structures & Algorithms</option>
+                <option>Operating System</option>
                 <option>DBMS</option>
                 <option>Computer Networks</option>
-                <option>Software Engineering</option>
+                <option>OOPS</option>
               </select>
             </div>
-          )}
+          )} 
 
           {/* session timer */}
           {sessionOpen && (
@@ -164,11 +190,11 @@ export default function FacultySession() {
 
           <div className="d-flex justify-content-center mt-3">
             {!sessionOpen ? (
-              <button className="btn btn-primary" onClick={handleSubmit}>
+              <button type="button" className="btn btn-primary" onClick={handleSubmit}>
                 Open Session
               </button>
             ) : (
-              <button className="btn btn-danger" onClick={closeSession}>
+              <button type="button" className="btn btn-danger" onClick={closeSession}>
                 Close Session
               </button>
             )}
