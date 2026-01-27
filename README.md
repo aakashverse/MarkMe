@@ -29,7 +29,7 @@
 ---
 
 ## ⚙️ Installation & Setup
-git clone https://github.com/aakashverse/MarkMe
-npm install
-npm run dev      # start frontend
-node app.js      # start backend
+- git clone https://github.com/aakashverse/MarkMe
+- npm install
+- npm run dev      # start frontend
+- node app.js      # start backend
