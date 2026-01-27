@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { loadModels, detectFace, drawBoundingBox } from "../faceDetection";
 import useToast from "../hooks/useToast";
 import axios from "axios";
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function StudentRegistration() {
   const [year2, setYear2] = useState("");
@@ -83,7 +84,7 @@ export default function StudentRegistration() {
       const descriptorArray = Array.from(detection.descriptor);
       
       const token = localStorage.getItem("token");
-      await axios.post("http://localhost:5000/student/register", {
+      await axios.post(`${API}/student/register`, {
         year: year2,
         branch: branch2,
         rollno: roll2,

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import useToast from "../hooks/useToast";
 import axios from "axios";
 import { useAsyncError, useNavigate } from "react-router-dom";
+const API = import.meta.env.VITE_API_BASE_URL;
 
 import {
   loadModels,
@@ -31,7 +32,7 @@ export default function StudentAttendance() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        "http://localhost:5000/student/activeSession",
+        `${API}/student/activeSession`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -129,7 +130,7 @@ export default function StudentAttendance() {
 
       // Send to backend
       const token = localStorage.getItem('token');  
-      await axios.post('http://localhost:5000/student/markAttendance', {
+      await axios.post(`${API}/student/markAttendance`, {
         rollno: roll,
         subject: subject1,
         sessionId: activeSessionId,

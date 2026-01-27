@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import useToast from "../hooks/useToast";
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function FacultySession() {
   const [year, setYear] = useState("");
@@ -84,7 +85,7 @@ export default function FacultySession() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        "http://localhost:5000/faculty/openSession",
+        `${API}/faculty/openSession`,
         { year, branch, subject, mode: isOnline ? "online" : "offline" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -107,7 +108,7 @@ export default function FacultySession() {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        "http://localhost:5000/faculty/closeSession",
+        `${API}/faculty/closeSession`,
         { sessionId: currentSession?._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );

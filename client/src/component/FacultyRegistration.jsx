@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import useToast from '../hooks/useToast';
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function FacultyRegistration() {
     const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function FacultyRegistration() {
         e.preventDefault();
         try{
             const res = await axios.post(
-              "http://localhost:5000/faculty/signup",
+              `${API}/faculty/signup`,
               { facultyId, password }
             );
     

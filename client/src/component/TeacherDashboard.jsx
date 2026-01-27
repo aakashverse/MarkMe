@@ -3,7 +3,7 @@ import axios from "axios";
 import { Pie, Bar } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js";
 import useToast from "../hooks/useToast";
-
+const API = import.meta.env.VITE_API_BASE_URL;
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
@@ -22,7 +22,7 @@ export default function TeacherDashboard(){
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await axios.post("http://localhost:5000/faculty/studentAttendance",
+      const res = await axios.post(`${API}/faculty/studentAttendance`,
         {rollno: rollNumber.trim()},
         { headers: { Authorization: `Bearer ${token}` } }
       );

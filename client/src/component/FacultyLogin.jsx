@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import useToast from "../hooks/useToast";
+const API = import.meta.env.VITE_API_BASE_URL;
 
 function FacultyLogin() {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ function FacultyLogin() {
       setLoading(true);
 
       const res = await axios.post(
-        "http://localhost:5000/login",
+        `${API}/login`,
         { facultyId, password },
         { withCredentials: true }
       );
