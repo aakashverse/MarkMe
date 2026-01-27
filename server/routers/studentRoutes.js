@@ -51,70 +51,6 @@ router.get("/activeSession", auth, async (req, res) => {
 
 
 // mark attendance
-// router.post('/markAttendance', auth, async(req, res) => {
-//   try {
-//     const { rollno, subject, sessionId, descriptor } = req.body;
-    
-//     // validate inputs
-//     if (!rollno || !subject || !sessionId || !descriptor) {
-//       return res.status(400).json({ error: "Missing required fields" });
-//     }
-
-//     const student = await Student.findOne({ rollno });
-//     if (!student) {
-//       return res.status(404).json({ error: "Student not found" });
-//     }
-    
-//     // ensure student.attendance is array
-//     if (!Array.isArray(student.attendance)) {
-//       student.attendance = [];
-//     }
-
-//     // Check active session
-//     const session = await Session.findById(sessionId);
-//     if (!session || !session.isActive) {
-//       return res.status(400).json({ error: "No active session" });
-//     }
-
-//     // Prevent duplicate attendance
-//     const alreadyMarked = await Attendance.findOne({
-//       studentId: student._id,
-//       sessionId
-//     });
-//     if (alreadyMarked) {
-//       return res.status(400).json({ error: "Attendance already marked" });
-//     }
-
-//     // create attndnc record
-//     const markedStudent = await Attendance.create({
-//       studentId: student._id,
-//       sessionId,
-//       subject,
-//       descriptor,  
-//       status: 'present',
-//       markedAt: new Date()
-//     });
-
-//     // update subject->attendance
-//     let subjectRecord = student.attendance.find(a => a.subject === subject);
-//     if (!subjectRecord) {
-//       subjectRecord = { subject, total: 0, present: 0 };
-//       student.attendance.push(subjectRecord);
-//     }
-//     subjectRecord.total += 1;
-//     subjectRecord.present += 1;
-//     await student.save();
-
-//     res.status(201).json({ 
-//       message: "Attendance marked successfully!", 
-//       rollno: student.rollno,
-//       attendanceId: markedStudent._id 
-//     });
-//   } catch (err) {
-//     console.error("Attendance error:", err);
-//     res.status(500).json({ error: "Server error" });
-//   }
-// });
 router.post('/markAttendance', auth, async (req, res) => {
   try {
     const { rollno, subject, sessionId, descriptor } = req.body;
@@ -138,6 +74,10 @@ router.post('/markAttendance', auth, async (req, res) => {
     if (!session || !session.isActive) {
       return res.status(400).json({ error: "No active session" });
     }
+    
+    // track session end time for absent calculation
+    session.endTime = new Date(Date.now() + 15*60*1000);  // 15 min
+    await session.save();
 
     const alreadyMarked = await Attendance.findOne({
       studentId: student._id,

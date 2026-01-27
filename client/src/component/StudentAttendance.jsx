@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import useToast from "../hooks/useToast";
 import axios from "axios";
+import { useAsyncError, useNavigate } from "react-router-dom";
 
 import {
   loadModels,
@@ -9,9 +10,10 @@ import {
 } from "../faceDetection";
 
 export default function StudentAttendance() {
+  const navigate = useNavigate();
   const [roll, setRoll] = useState('');            
   const [subject1, setSubject1] = useState('');      
-  const [descriptor, setDescriptor] = useState(null); 
+  // const [descriptor, setDescriptor] = useState(null); 
 
   const [cameraOn, setCameraOn] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
@@ -137,6 +139,7 @@ export default function StudentAttendance() {
       });
 
       showSuccess(`Attendance marked for ${subject1}`);
+      navigate('/');
       setRoll('');  
       setSubject1('');
     } catch (err) {

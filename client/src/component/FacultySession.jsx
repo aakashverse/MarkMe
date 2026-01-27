@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import useToast from "../hooks/useToast";
 
@@ -10,59 +10,69 @@ export default function FacultySession() {
 
   const [sessionOpen, setSessionOpen] = useState(false);
   const [currentSession, setCurrentSession] = useState(null);
-  const [seconds, setSeconds] = useState(0);
-  const {showSuccess, showError} = useToast();
 
-   /* check session */
-  useEffect(() => {
-    if (currentSession?.startTime) {
-      const start = new Date(currentSession.startTime).getTime();
-      const now = Date.now();
-      setSeconds(Math.floor((now - start) / 1000));
-    }
-  }, [currentSession]);
+  const [elapsed, setElapsed] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(15 * 60);
+  const [warningActive, setWarningActive] = useState(false);
 
-  // reset 
+  const timerRef = useRef(null);
+  const countdownRef = useRef(null);
+
+  const { showSuccess, showError } = useToast();
+
+  /* session — don’t start it */
+  // useEffect(() => {
+  //   (async () => {
+  //     try {
+  //       const token = localStorage.getItem("token");
+  //       const res = await axios.get(
+  //         "http://localhost:5000/faculty/activeSession",
+  //         { headers: { Authorization: `Bearer ${token}` } }
+  //       );
+
+  //       if (res.data.hasActiveSession) {
+  //         setCurrentSession(res.data.session);
+  //         showSuccess("Existing session detected. Start manually if needed.");
+  //       }
+  //     } catch {
+  //       console.log("No active session");
+  //     }
+  //   })();
+  // }, []);
+
+  /* reset subject */
   useEffect(() => {
     setSubject("");
   }, [year, branch]);
 
-  const checkActiveSession = async() => {
-    try{
-      const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/faculty/activeSession", {
-        headers: {Authorization: `Bearer ${token}`}
+  /* START TIMERS */
+  const startTimers = () => {
+    timerRef.current = setInterval(() => {
+      setElapsed(prev => prev + 1);
+    }, 1000);
+
+    countdownRef.current = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev === 120) setWarningActive(true);
+        if (prev <= 1) {
+          handleAutoClose();
+          return 0;
+        }
+        return prev - 1;
       });
+    }, 1000);
+  };
 
-      if(res.data.hasActiveSession){
-        setSessionOpen(true);
-        setCurrentSession(res.data);
-      }
-    } catch(err){
-      console.log('No Active Session!', err);
-    } finally{
-      setSessionOpen(false);
-    }
-  }
+  /* STOP TIMERS */
+  const stopTimers = () => {
+    clearInterval(timerRef.current);
+    clearInterval(countdownRef.current);
+  };
 
-   
-  // timer
-  useEffect(() => {
-    let interval;
-    if (sessionOpen) {
-      interval = setInterval(() => {
-        setSeconds(prev => prev + 1);
-      }, 1000);
-    }
-    return () => interval && clearInterval(interval);
-  }, [sessionOpen]);
-
-  /* start session */
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  /* START SESSION */
+  const handleStart = async () => {
     if (!year || !branch) {
-      showError("Please select Year and Branch");
+      showError("Please select Year & Branch");
       return;
     }
 
@@ -73,133 +83,115 @@ export default function FacultySession() {
 
     try {
       const token = localStorage.getItem("token");
-
       const res = await axios.post(
         "http://localhost:5000/faculty/openSession",
         { year, branch, subject, mode: isOnline ? "online" : "offline" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      
+
       setCurrentSession(res.data.session);
       setSessionOpen(true);
-      showSuccess('Session initiated!')
-      setSeconds(0);
-    } catch (err) {
-      showError("Failed to open session");
-      console.log("session error: ", err.message);
+      setElapsed(0);
+      setTimeLeft(15 * 60);
+      setWarningActive(false);
+
+      startTimers();
+      showSuccess("Session started (15 min)");
+    } catch {
+      showError("Failed to start session");
     }
   };
 
-  /* close sessn */
-  const closeSession = async (e) => {
-    e.preventDefault();
-
+  /* CLOSE SESSION */
+  const handleClose = async () => {
     try {
       const token = localStorage.getItem("token");
-      
       await axios.post(
         "http://localhost:5000/faculty/closeSession",
-        {},
+        { sessionId: currentSession?._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+    } finally {
+      stopTimers();
       setSessionOpen(false);
-      showSuccess('Session closed!')
-      setSeconds(0);
-
-    } catch (err) {
-      showError("Failed to close session");
+      setCurrentSession(null);
+      setElapsed(0);
+      setTimeLeft(15 * 60);
+      setWarningActive(false);
+      showSuccess("Session closed");
     }
   };
 
-  const formatTime = (time) => {
-    const hr = String(Math.floor(time / 3600)).padStart(2, "0");
-    const min = String(Math.floor((time % 3600) / 60)).padStart(2, "0");
-    const sec = String(time % 60).padStart(2, "0");
-    return `${hr}:${min}:${sec}`;
+  const handleAutoClose = async () => {
+    showError("⏰ Time expired. Auto-closing session");
+    await handleClose();
   };
 
-  return (
-    <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
-      <div className="card shadow-lg p-4 border-0" style={{ maxWidth: "430px", width: "100%", borderRadius: "20px" }}>
-        <h2 className="text-center mb-4 fw-bold text-primary">
-          Faculty Control Panel
-        </h2>
+  const formatTime = s =>
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
-        {/* mode */}
-        <div className="d-flex justify-content-center mb-4">
-          <div
-            className={`p-2 px-4 rounded-pill fw-bold ${
-              isOnline ? "bg-success text-white" : "bg-danger text-white"
-            }`}
-            style={{ cursor: "pointer" }}
+  return (
+    <div className="container d-flex justify-content-center mt-5">
+      <div className="card p-4 shadow" style={{ width: 420 }}>
+        <h3 className="text-center text-primary mb-4">Faculty Control Panel</h3>
+
+        <div className="text-center mb-3">
+          <span
+            className={`badge px-3 py-2 ${isOnline ? "bg-success" : "bg-danger"}`}
+            style={{ cursor: sessionOpen ? "not-allowed" : "pointer" }}
             onClick={() => !sessionOpen && setIsOnline(!isOnline)}
           >
-            {isOnline ? "🟢 Online Mode" : "🔴 Offline Mode"}
-          </div>
+            {isOnline ? "🟢 Online" : "🔴 Offline"}
+          </span>
         </div>
 
-        <form onSubmit={(e) => e.preventDefault()}>
-          {/* year */}
-          <div className="mb-3">
-            <label className="form-label fw-semibold">Select Year</label>
-            <select className="form-select" value={year} onChange={(e) => setYear(e.target.value)}>
-              <option value="">Choose...</option>
-              <option>1st Year</option>
-              <option>2nd Year</option>
-              <option>3rd Year</option>
-              <option>4th Year</option>
-            </select>
+        <select disabled={sessionOpen} className="form-select mb-2" value={year} onChange={e => setYear(e.target.value)}>
+          <option value="">Select Year</option>
+          <option>1st Year</option>
+          <option>2nd Year</option>
+          <option>3rd Year</option>
+          <option>4th Year</option>
+        </select>
+
+        <select disabled={sessionOpen} className="form-select mb-2" value={branch} onChange={e => setBranch(e.target.value)}>
+          <option value="">Select Branch</option>
+          <option>CSE</option>
+          <option>IT</option>
+          <option>ECE</option>
+          <option>ME</option>
+          <option>EL</option>
+          <option>CE</option>
+        </select>
+
+        {year === "3rd Year" && branch === "CSE" && (
+          <select disabled={sessionOpen} className="form-select mb-3" value={subject} onChange={e => setSubject(e.target.value)}>
+            <option value="">Select Subject</option>
+            <option>Data Structures & Algorithms</option>
+            <option>Operting System</option>
+            <option>Computer Networks</option>
+            <option>DBMS</option>
+            <option>OOPS</option>
+          </select>
+        )}
+
+        {sessionOpen && (
+          <div className="text-center mb-3">
+            <h4 className={timeLeft <= 120 ? "text-danger" : "text-primary"}>
+              ⏰ {formatTime(timeLeft)}
+            </h4>
+            {warningActive && <div className="alert alert-warning">⚠️ Less than 2 minutes!</div>}
           </div>
+        )}
 
-          {/* branch */}
-          <div className="mb-3">
-            <label className="form-label fw-semibold">Select Branch</label>
-            <select className="form-select" value={branch} onChange={(e) => setBranch(e.target.value)}>
-              <option value="">Choose...</option>
-              <option>CSE</option>
-              <option>IT</option>
-              <option>AI/ML</option>
-              <option>ECE</option>
-              <option>ME</option>
-            </select>
-          </div>
-
-          {/* temporary subject/stream data */}
-          {year === "3rd Year" && branch === "CSE" && (
-            <div className="mb-4">
-              <label className="form-label fw-semibold">Select Subject</label>
-              <select className="form-select" value={subject} onChange={(e) => setSubject(e.target.value)}>
-                <option value="">Choose...</option>
-                <option>Data Structures & Algorithms</option>
-                <option>Operating System</option>
-                <option>DBMS</option>
-                <option>Computer Networks</option>
-                <option>OOPS</option>
-              </select>
-            </div>
-          )} 
-
-          {/* session timer */}
-          {sessionOpen && (
-            <div className="text-center mt-4">
-              <h3>{formatTime(seconds)}</h3>
-              <p className="text-muted">Session running...</p>
-            </div>
-          )}
-
-          <div className="d-flex justify-content-center mt-3">
-            {!sessionOpen ? (
-              <button type="button" className="btn btn-primary" onClick={handleSubmit}>
-                Open Session
-              </button>
-            ) : (
-              <button type="button" className="btn btn-danger" onClick={closeSession}>
-                Close Session
-              </button>
-            )}
-          </div>
-        </form>
+        {!sessionOpen ? (
+          <button className="btn btn-primary w-100" onClick={handleStart}>
+            🚀 START SESSION
+          </button>
+        ) : (
+          <button className="btn btn-danger w-100" onClick={handleClose}>
+            ⏹️ END SESSION
+          </button>
+        )}
       </div>
     </div>
   );

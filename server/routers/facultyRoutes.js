@@ -66,16 +66,17 @@ router.post("/openSession", auth, async (req, res) => {
   console.log(req.body);
   
   // existing session close
-  await Session.findOneAndUpdate(
+  await Session.updateMany(
     { facultyId: req.faculty.facultyId, isActive: true },
-    { isActive: false, endTime: new Date() }
+    { isActive: false, closedAt: new Date() }
   );
   
   const session = await Session.create({
     facultyId: req.faculty.facultyId,
     year, branch, subject, mode,
     isActive: true,
-    startTime: new Date()
+    startTime: new Date(),
+    closedAt: null
   });
   
   res.json({ 
@@ -86,28 +87,71 @@ router.post("/openSession", auth, async (req, res) => {
 });
 
 // Close session
-router.post("/closeSession", auth, async (req, res) => {
-  const session = await Session.findOneAndUpdate(
-    { facultyId: req.faculty.facultyId, isActive: true },
-    { isActive: false, endTime: new Date() },
-    { new: true }
-  );
-  
-  if (!session) {
+router.post("/closeSession", auth, async(req, res) => {
+  const {sessionId} = req.body;
+
+  const session = await Session.findById(sessionId);
+  if (!session || !session.isActive) {
     return res.status(400).json({ error: "No active session" });
   }
+
+  // close the session
+  session.isActive = false;
+  session.closedAt = new Date();
+  await session.save();
+
+  // get all students in this subject/year
+  const students = await Student.find({
+    year: session.year,
+    branch: session.branch
+  });
+
+  // get students who marked present
+  const presentStudents = await Attendance.find({
+    sessionId,
+    status: 'present'
+  }).select('studentId');
+
+  const presentStudentIds = presentStudents.map(a => a.studentId.toString());
+  // mark students absent who did'nt attend
+  for(const student of students){
+    if(!presentStudentIds.includes(student._id.toString())){
+      let subjectRecord = student.attendance.find(a => a.subject === session.subject);
+      if(!subjectRecord){
+        subjectRecord = {subject: session.subject, total:0, present:0};
+        student.attendance.push(subjectRecord);
+      }
+
+      subjectRecord.total += 1; 
+      await student.save();
+
+      // Create absent record
+      await Attendance.create({
+        studentId: student._id,
+        sessionId,
+        subject: session.subject,
+        status: 'absent',
+        markedAt: new Date()
+      });
+    }
+  }
   
-  res.json({ message: "Session closed" });
+  res.json({ message: "Session closed successfully" });
 });
 
 // Check active session (for dashboard)
 router.get("/activeSession", auth, async (req, res) => {
   const session = await Session.findOne({ 
     facultyId: req.faculty.facultyId, 
-    isActive: true 
+    isActive: true, 
+    closedAt: null
   }).populate('facultyId');
 
-  res.json({ hasActiveSession: !!session, session });
+  if(!session){
+    return res.json({hasActiveSession:false});
+  }
+
+  res.json({ hasActiveSession: true, session });
 });
 
 // student attendance dash
