@@ -40,6 +40,8 @@
 8. Backend matches the descriptor with the database  
 9. Attendance is marked and the dashboard is updated
 
+---
+
 ## ⚙️ Installation & Setup
 
 - git clone https://github.com/aakashverse/MarkMe
