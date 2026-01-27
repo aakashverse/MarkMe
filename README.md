@@ -28,8 +28,21 @@
 
 ---
 
+## 🔄 System Architecture & Workflow
+
+1. Faculty logs in or registers  
+2. Faculty opens an attendance session  
+3. Student registers with academic details  
+4. Face models load on the client  
+5. Face is captured via the camera  
+6. A 128-dimension face descriptor is generated  
+7. Descriptor is sent to the backend  
+8. Backend matches the descriptor with the database  
+9. Attendance is marked and the dashboard is updated
+
 ## ⚙️ Installation & Setup
+
 - git clone https://github.com/aakashverse/MarkMe
 - npm install
-- npm run dev      # start frontend
-- node app.js      # start backend
+- npm run dev      
+- node app.js      
