@@ -22,7 +22,7 @@ export default function TeacherDashboard(){
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await axios.post('http://localhost:5000/faculty/studentAttendance',
+      const res = await axios.post(`${API}/faculty/studentAttendance`,
         {rollno: rollNumber.trim()},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -99,7 +99,6 @@ export default function TeacherDashboard(){
     </div>
 
     {/* Student Info Table */}
-    {/* Student Info Table (Desktop md+) */}
 <div className="d-none d-md-block">
   <div className="table-responsive w-100">
     <table className="table table-bordered table-striped mb-0">
@@ -144,8 +143,7 @@ export default function TeacherDashboard(){
   </div>
 </div>
 
-{/* Student Info (Mobile < md) - Compact */}
-  {/* Student Info (Mobile < md) - 2 Column Table No Gap */}
+{/* Student Info - Compact */}
 <div className="d-block d-md-none">
   {!student ? (
     <div className="border rounded-2 p-2 text-center text-muted bg-light">

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import useToast from "../hooks/useToast";
-// const API = import.meta.env.VITE_API_BASE_URL;
+const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function FacultySession() {
   const [year, setYear] = useState("");
@@ -26,7 +26,7 @@ export default function FacultySession() {
     setSubject("");
   }, [year, branch]);
 
-  /* START TIMERS */
+  /* start timer */
   const startTimers = () => {
     timerRef.current = setInterval(() => {
       setElapsed((prev) => prev + 1);
@@ -44,13 +44,13 @@ export default function FacultySession() {
     }, 1000);
   };
 
-  /* STOP TIMERS */
+  /* stop timer */
   const stopTimers = () => {
     clearInterval(timerRef.current);
     clearInterval(countdownRef.current);
   };
 
-  /* START SESSION */
+  /* start session */
   const handleStart = async () => {
     if (!year || !branch) {
       showError("Please select Year & Branch");
@@ -65,7 +65,7 @@ export default function FacultySession() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        'http://localhost:5000/faculty/openSession',
+        `${API}/faculty/openSession`,
         { year, branch, subject, mode: isOnline ? "online" : "offline" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -83,12 +83,12 @@ export default function FacultySession() {
     }
   };
 
-  /* CLOSE SESSION */
+  /* close session */
   const handleClose = async () => {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        'http://localhost:5000/faculty/closeSession',
+        `${API}/faculty/closeSession`,
         { sessionId: currentSession?._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );

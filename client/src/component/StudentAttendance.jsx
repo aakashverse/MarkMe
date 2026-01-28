@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import useToast from "../hooks/useToast";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-// const API = import.meta.env.VITE_API_BASE_URL;
+const API = import.meta.env.VITE_API_BASE_URL;
 
 import { loadModels, detectFace, drawBoundingBox } from "../faceDetection";
 
@@ -27,7 +27,7 @@ export default function StudentAttendance() {
     const checkSession = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get('http://localhost:5000/student/activeSession', {
+        const res = await axios.get(`${API}/student/activeSession`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -128,7 +128,7 @@ export default function StudentAttendance() {
       // Send to backend
       const token = localStorage.getItem("token");
       await axios.post(
-        'http://localhost:5000/student/markAttendance',
+        `${API}/student/markAttendance`,
         {
           rollno: Number(roll),
           subject: subject1,
