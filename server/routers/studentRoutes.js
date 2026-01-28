@@ -8,7 +8,7 @@ const auth = require("../Middlewares/auth");
 // register student
 router.post("/register", auth, async(req, res) => {
   try {
-    console.log(req.body);
+    // console.log(req.body);
     const { year, branch, rollno, faceDescriptor } = req.body;
 
     if (!year || !branch || !rollno || !faceDescriptor?.length) {
@@ -54,12 +54,13 @@ router.get("/activeSession", auth, async (req, res) => {
 router.post('/markAttendance', auth, async (req, res) => {
   try {
     const { rollno, subject, sessionId, descriptor } = req.body;
+    console.log('markAtt reached: ', req.body);
     
-    if (!rollno || !subject || !sessionId || !descriptor) {
-      return res.status(400).json({ error: "Missing required fields" });
+    if (!rollno || !subject || !sessionId || !Array.isArray(descriptor) || descriptor.length !== 128) {
+      return res.status(400).json({ error: "Invalid or missing fields" });
     }
 
-    const student = await Student.findOne({ rollno });
+    const student = await Student.findOne({ rollno: Number(rollno)});
     if (!student) {
       return res.status(404).json({ error: "Student not found" });
     }
@@ -119,7 +120,7 @@ router.post('/markAttendance', auth, async (req, res) => {
       rollno: student.rollno 
     });
   } catch (err) {
-    console.error("Attendance error:", err);
+    console.error("Attendance error:", err.message);
     res.status(500).json({ error: "Server error" });
   }
 });

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import useToast from "../hooks/useToast";
-const API = import.meta.env.VITE_API_BASE_URL;
+// const API = import.meta.env.VITE_API_BASE_URL;
 
 function FacultyLogin() {
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ function FacultyLogin() {
   const [facultyId, setFacultyId] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const {showSuccess, showError} = useToast();
+  const { showSuccess, showError } = useToast();
 
   const handleLogIn = async (e) => {
     e.preventDefault();
@@ -24,7 +24,7 @@ function FacultyLogin() {
       setLoading(true);
 
       const res = await axios.post(
-        `${API}/login`,
+        'http://localhost:5000/login',
         { facultyId, password },
         { withCredentials: true }
       );
@@ -34,8 +34,7 @@ function FacultyLogin() {
       localStorage.setItem("facultyId", res.data.facultyId);
 
       showSuccess("Login successful");
-      navigate("/Faculty-Dashboard");
-
+      navigate("/faculty-session");
     } catch (error) {
       showError(error?.response?.data?.error || "Login failed");
     } finally {
@@ -44,12 +43,13 @@ function FacultyLogin() {
   };
 
   return (
-    <div className="m-5">
+    <div className="container py-4 py-md-5">
       <form
         className="d-flex justify-content-center align-items-center"
         onSubmit={handleLogIn}
       >
-        <div className="col-12 col-lg-6 col-md-8 col-sm-12 border rounded-3 p-3"
+        <div
+          className="col-12 col-sm-10 col-md-8 col-lg-6 border rounded-3 p-3 p-md-4"
           style={{ backgroundColor: "whitesmoke" }}
         >
           <h4 className="text-center mb-3">Faculty Login</h4>

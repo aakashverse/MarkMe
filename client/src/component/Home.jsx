@@ -1,30 +1,30 @@
-import React from 'react'
-import Navbar from './Navbar'
+import React from "react";
+import Navbar from "./Navbar";
 
-function Home() {
-   const features = [
-     {
-       icon: "🎥",
-       title: "Face Detection Ready",
-       desc: "Integrated camera placeholder with future-proof hooks for detection.",
-     },
-     {
-       icon: "⏳",
-       title: "Session Controls",
-       desc: "Open/Close session with live timer for accountability.",
-     },
-     {
-       icon: "📱",
-       title: "Responsive & Modern",
-       desc: "Clean Bootstrap layout that works beautifully on all devices.",
-     },
-     {
-       icon: "🔐",
-       title: "Secure & Private",
-       desc: "Designed with privacy in mind; no data leaves your browser unless you choose.",
-     },
+export default function Home() {
+  const features = [
+    {
+      icon: "🎥",
+      title: "Face Detection Ready",
+      desc: "Integrated camera placeholder with future-proof hooks for detection.",
+    },
+    {
+      icon: "⏳",
+      title: "Session Controls",
+      desc: "Open/Close session with live timer for accountability.",
+    },
+    {
+      icon: "📱",
+      title: "Responsive & Modern",
+      desc: "Clean Bootstrap layout that works beautifully on all devices.",
+    },
+    {
+      icon: "🔐",
+      title: "Secure & Private",
+      desc: "Designed with privacy in mind; no data leaves your browser unless you choose.",
+    },
   ];
-  
+
   return (
     <>
       <div
@@ -34,7 +34,7 @@ function Home() {
         <div className="container">
           <div className="row align-items-center">
             {/* metadaata */}
-            <div className="col-md-6 mb-4">
+            <div className="col-12 col-md-6 mb-4 text-center text-md-start">
               <span className="badge bg-secondary px-3 py-2 mb-3">
                 Next-gen Attendance
               </span>
@@ -43,16 +43,17 @@ function Home() {
                 Smart, secure, and effortless <br /> attendance
               </h1>
 
-              <p className=" my-3 text-light">
+              <p className="my-3 text-light">
                 Use camera-based face detection and one-click sessions to manage
                 classes with ease. Built for speed, privacy, and accuracy.
               </p>
             </div>
 
-            <div className="col-md-6">
+            <div className="col-12 col-md-6 d-flex justify-content-center justify-content-md-end">
               <div
                 style={{
-                  width: "80%",
+                  width: "100%",
+                  maxWidth: "420px",
                   height: "310px",
                   backgroundColor: "white",
                   borderRadius: "25px",
@@ -75,6 +76,7 @@ function Home() {
             </div>
           </div>
         </div>
+
         <div className="container py-5" style={{ backgroundColor: "#f7f9fc" }}>
           {/* Heading */}
           <div className="text-center mb-5">
@@ -87,9 +89,9 @@ function Home() {
           {/* Feature Cards */}
           <div className="row g-4">
             {features.map((item, index) => (
-              <div className="col-md-3" key={index}>
+              <div className="col-12 col-sm-6 col-lg-3" key={index}>
                 <div
-                  className="p-4 bg-white shadow-sm rounded"
+                  className="p-4 bg-white shadow-sm rounded h-100"
                   style={{ borderRadius: "15px", minHeight: "180px" }}
                 >
                   <div className="fs-1 mb-3">{item.icon}</div>
@@ -105,4 +107,4 @@ function Home() {
   );
 }
 
-export default Home
+

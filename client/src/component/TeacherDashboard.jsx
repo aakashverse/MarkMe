@@ -22,7 +22,7 @@ export default function TeacherDashboard(){
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await axios.post(`${API}/faculty/studentAttendance`,
+      const res = await axios.post('http://localhost:5000/faculty/studentAttendance',
         {rollno: rollNumber.trim()},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -72,124 +72,191 @@ export default function TeacherDashboard(){
     ],
   };
 
-  return (
-    <div className="container mt-5">
-      <h2 className="text-center mb-4">Attendance Dashboard</h2>
+   return (
+  <div className="container-fluid mt-4 px-2 px-md-5 overflow-hidden">
+    <h2 className="text-center mb-4">Attendance Dashboard</h2>
 
-      <div className="row my-4 justify-content-center">
-        <div className="col-md-4">
-          {/* <label className="form-label fw-semibold">Roll Number</label> */}
-          <input
-            type="text"
-            className="form-control"
-            value={rollNumber}
-            onChange={(e) => setRollNumber(e.target.value)}
-            placeholder="e.g., 23207"
-          />
-        </div>
-        <div className="col-md-2 d-flex align-items-end">
-          <button
-            className="btn btn-success w-100"
-            onClick={fetchByRollNumber}
-            disabled={loading}
-          >
-            {loading ? "🔄 Loading..." : "📋 Check"}
-          </button>
-        </div>
+    <div className="row my-4 justify-content-center g-2">
+      <div className="col-12 col-md-4">
+        <input
+          type="text"
+          className="form-control"
+          value={rollNumber}
+          onChange={(e) => setRollNumber(e.target.value)}
+          placeholder="e.g., 23207"
+        />
       </div>
 
-      {/* Student Info Table */}
-      <div className="table-responsive mb-4">
-        <table className="table table-bordered table-striped">
-          <thead className="table-dark">
-            <tr>
-              <th>Roll No</th>
-              <th>Year</th>
-              <th>Branch</th>
-              <th>Attendance</th>
-              <th>%age Attendance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {!student ? (
-              <tr>
-                <td colSpan="5" className="text-center py-4 text-muted">
-                  Enter roll number to check attendance
-                </td>
-              </tr>
-            ) : (
-              <tr>
-                <td><strong>{student.rollno}</strong></td>
-                <td>{student.year || 'N/A'}</td>
-                <td>{student.branch || 'N/A'}</td>
-                <td>{presentCount}/{totalClasses} <span className="text-danger">({absent} absent)</span></td>
-                <td>
-                  {/* <strong>{presentCount}/{totalClasses}</strong> */}
-                  <span className="badge bg-info ms-2">
-                    {totalClasses > 0 ? Math.round((presentCount/totalClasses)*100) : 0}%
-                  </span>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="col-12 col-md-2">
+        <button
+          className="btn btn-success w-100"
+          onClick={fetchByRollNumber}
+          disabled={loading}
+        >
+          {loading ? "🔄 Loading..." : "📋 Check"}
+        </button>
       </div>
-
-      {/* Charts */}
-      {student && subjectAttendance.length > 0 && (
-        <div className="row g-4">
-          <div className="col-lg-8 ">
-            <h5 className="text-center mb-3">📚 Subject-wise Attendance</h5>
-            <div style={{ height: '400px', background: '#f8f9fa', borderRadius: '8px', padding: '20px' }}>
-              <Bar
-                key={JSON.stringify(barData)}   // 🔥 forces re-animation on data change
-                data={barData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  animation: {
-                    duration: 1200,
-                    easing: "easeOutQuart",
-                    delay: (context) => context.dataIndex * 100
-                  },
-                  plugins: {
-                    legend: { position: "top" }
-                  },
-                  scales: {
-                    y: {
-                      beginAtZero: true,
-                      ticks: { stepSize: 1 }
-                    }
-                  }
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="col-lg-4">
-            <h5 className="text-center mb-3">📊 Overall Attendance</h5>
-            <div style={{ height: '300px', background: '#f8f9fa', borderRadius: '8px', padding: '20px' }}>
-              <Pie
-                key={JSON.stringify(pieData)}   // 🔥 re-animate on search
-                data={pieData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  animation: {
-                    animateRotate: true,
-                    animateScale: true,
-                    duration: 900,
-                    easing: "easeOutQuart"
-                  },
-                  plugins: {
-                    legend: { position: "bottom" }
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
-  );
+
+    {/* Student Info Table */}
+    {/* Student Info Table (Desktop md+) */}
+<div className="d-none d-md-block">
+  <div className="table-responsive w-100">
+    <table className="table table-bordered table-striped mb-0">
+      <thead className="table-dark">
+        <tr>
+          <th>Roll No</th>
+          <th>Year</th>
+          <th>Branch</th>
+          <th>Attendance</th>
+          <th>%age Attendance</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {!student ? (
+          <tr>
+            <td colSpan="5" className="text-center py-4 text-muted">
+              Enter roll number to check attendance
+            </td>
+          </tr>
+        ) : (
+          <tr>
+            <td><strong>{student.rollno}</strong></td>
+            <td>{student.year || "N/A"}</td>
+            <td>{student.branch || "N/A"}</td>
+            <td>
+              {presentCount}/{totalClasses}{" "}
+              <span className="text-danger">({absent} absent)</span>
+            </td>
+            <td>
+              <span className="badge bg-info ms-2">
+                {totalClasses > 0
+                  ? Math.round((presentCount / totalClasses) * 100)
+                  : 0}
+                %
+              </span>
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{/* Student Info (Mobile < md) - Compact */}
+  {/* Student Info (Mobile < md) - 2 Column Table No Gap */}
+<div className="d-block d-md-none">
+  {!student ? (
+    <div className="border rounded-2 p-2 text-center text-muted bg-light">
+      Enter roll number to check attendance
+    </div>
+  ) : (
+    <div className="border rounded-2 overflow-hidden bg-light">
+      <div className="text-center fw-bold py-2 border-bottom">
+        Student Attendance
+      </div>
+
+      <table className="table table-bordered m-0">
+        <tbody>
+          <tr>
+            <td className="fw-semibold p-2 w-50">Roll No</td>
+            <td className="p-2 w-50">{student.rollno}</td>
+          </tr>
+          <tr>
+            <td className="fw-semibold p-2">Year</td>
+            <td className="p-2">{student.year || "N/A"}</td>
+          </tr>
+          <tr>
+            <td className="fw-semibold p-2">Branch</td>
+            <td className="p-2">{student.branch || "N/A"}</td>
+          </tr>
+          <tr>
+            <td className="fw-semibold p-2">Attendance</td>
+            <td className="p-2">
+              {presentCount}/{totalClasses}{" "}
+              <span className="text-danger">({absent} absent)</span>
+            </td>
+          </tr>
+          <tr>
+            <td className="fw-semibold p-2">% Attendance</td>
+            <td className="p-2">
+              <span className="badge bg-info">
+                {totalClasses > 0
+                  ? Math.round((presentCount / totalClasses) * 100)
+                  : 0}
+                %
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  )}
+</div>
+
+
+
+    {student && subjectAttendance.length > 0 && (
+      <div className="mt-4 row g-4">
+        <div className="col-12 col-lg-8">
+          <h5 className="text-center mb-3">📚 Subject-wise Attendance</h5>
+
+          <div className="chartBoxBar p-2 p-md-4" style={{ background:"#f8f9fa", borderRadius:"8px", width:"100%" }}>
+            <Bar
+              key={JSON.stringify(barData)}
+              data={barData}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                resizeDelay: 100,
+                animation: {
+                  duration: 1200,
+                  easing: "easeOutQuart",
+                  delay: (context) => context.dataIndex * 100
+                },
+                plugins: { legend: { position: "top" } },
+                scales: {
+                  x: { ticks: { autoSkip: true, maxRotation: 45, minRotation: 0 } },
+                  y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="col-12 col-lg-4">
+          <h5 className="text-center mb-3">📊 Overall Attendance</h5>
+
+          <div className="chartBoxPie p-2 p-md-4" style={{ background:"#f8f9fa", borderRadius:"8px", width:"100%" }}>
+            <Pie
+              key={JSON.stringify(pieData)}
+              data={pieData}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                resizeDelay: 100,
+                animation: {
+                  animateRotate: true,
+                  animateScale: true,
+                  duration: 1800,
+                  easing: "easeInOutQuart",
+                  delay: 150
+                },
+                plugins: {
+                  legend: {
+                    position: "bottom",
+                    labels: { boxWidth: 12, padding: 12 }
+                  }
+                }
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    )}
+  </div>  
+);
+
+
 }

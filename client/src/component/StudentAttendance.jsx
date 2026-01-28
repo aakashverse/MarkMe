@@ -1,26 +1,22 @@
 import React, { useState, useRef, useEffect } from "react";
 import useToast from "../hooks/useToast";
 import axios from "axios";
-import { useAsyncError, useNavigate } from "react-router-dom";
-const API = import.meta.env.VITE_API_BASE_URL;
+import { useNavigate } from "react-router-dom";
+// const API = import.meta.env.VITE_API_BASE_URL;
 
-import {
-  loadModels,
-  detectFace,
-  drawBoundingBox,
-} from "../faceDetection";
+import { loadModels, detectFace, drawBoundingBox } from "../faceDetection";
 
 export default function StudentAttendance() {
   const navigate = useNavigate();
-  const [roll, setRoll] = useState('');            
-  const [subject1, setSubject1] = useState('');      
-  // const [descriptor, setDescriptor] = useState(null); 
+  const [roll, setRoll] = useState("");
+  const [subject1, setSubject1] = useState("");
+  // const [descriptor, setDescriptor] = useState(null);
 
   const [cameraOn, setCameraOn] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeSessionId, setActiveSessionId] = useState(null);
-  const {showSuccess, showError} = useToast();
+  const { showSuccess, showError } = useToast();
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -28,58 +24,59 @@ export default function StudentAttendance() {
 
   // check if session is active for atten.
   useEffect(() => {
-  const checkSession = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `${API}/student/activeSession`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+    const checkSession = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get('http://localhost:5000/student/activeSession', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-      if (res.data.hasActiveSession) {
-        setActiveSessionId(res.data.sessionId);
-        setSubject1(res.data.subject || "");
-      } else {
+        console.log('checking active session: ', res.data);
+
+        if (res.data.hasActiveSession) {
+          setActiveSessionId(res.data.sessionId);
+          setSubject1(res.data.subject || "");
+        } else {
+          setActiveSessionId(null);
+        }
+      } catch (err) {
+        console.log("No active session");
         setActiveSessionId(null);
       }
-    } catch (err) {
-      console.log("No active session");
-      setActiveSessionId(null);
-    }
-  };
+    };
 
-  checkSession();
-  const interval = setInterval(checkSession, 5000); // poll every 5s
+    checkSession();
+    const interval = setInterval(checkSession, 5000); // poll every 10s
 
-  return () => clearInterval(interval);
-}, []);
+    return () => clearInterval(interval);
+  }, []);
 
   // load modesls
   useEffect(() => {
     loadModels().then(() => setModelsLoaded(true));
   }, []);
 
-
   // camera
   useEffect(() => {
     let stream;
     if (cameraOn) {
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(s => {
+      navigator.mediaDevices
+        .getUserMedia({ video: true })
+        .then((s) => {
           stream = s;
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
           }
         })
-        .catch(err => {
-          showError('Camera access denied');
+        .catch((err) => {
+          showError("Camera access denied");
           setCameraOn(false);
         });
     }
-    
+
     return () => {
       if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach((track) => track.stop());
       }
     };
   }, [cameraOn]);
@@ -129,31 +126,35 @@ export default function StudentAttendance() {
       const faceDescriptor = Array.from(detection.descriptor);
 
       // Send to backend
-      const token = localStorage.getItem('token');  
-      await axios.post(`${API}/student/markAttendance`, {
-        rollno: roll,
-        subject: subject1,
-        sessionId: activeSessionId,
-        descriptor: faceDescriptor
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const token = localStorage.getItem("token");
+      await axios.post(
+        'http://localhost:5000/student/markAttendance',
+        {
+          rollno: Number(roll),
+          subject: subject1,
+          sessionId: activeSessionId,
+          descriptor: faceDescriptor,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       showSuccess(`Attendance marked for ${subject1}`);
-      navigate('/');
-      setRoll('');  
-      setSubject1('');
+      navigate("/");
+      setRoll("");
+      setSubject1("");
     } catch (err) {
-      console.error(err);
-      showError("Face capture failed");
+      console.error(err.response?.data);
+      showError("Attendance failed!");
     } finally {
       setLoading(false);
     }
   };
 
-   return (
-    <div className="d-flex justify-content-center align-items-center py-4">
-      <div className="card p-4 shadow" style={{ width: 400 }}>
+  return (
+    <div className="container d-flex justify-content-center align-items-center py-4 px-2">
+      <div className="card p-3 p-md-4 shadow w-100" style={{ maxWidth: 400 }}>
         <h3 className="text-center mb-3">🎓 Mark Your Presence</h3>
 
         <form onSubmit={handleSubmit}>
@@ -194,25 +195,25 @@ export default function StudentAttendance() {
             </button>
           ) : (
             <div style={{ position: "relative", height: "200px" }}>
-              <video 
-                ref={videoRef} 
-                width="100%" 
+              <video
+                ref={videoRef}
+                width="100%"
                 height="200px"
-                autoPlay 
-                muted 
-                playsInline  // mobile fix
+                autoPlay
+                muted
+                playsInline // mobile fix
                 style={{ borderRadius: "10px" }}
               />
               <canvas
                 ref={canvasRef}
-                width="100%"
-                height="200px"
                 style={{
                   position: "absolute",
+                  height: "200px",
+                  width: "100%",
                   top: 0,
                   left: 0,
                   borderRadius: "10px",
-                  pointerEvents: "none"
+                  pointerEvents: "none",
                 }}
               />
             </div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import useToast from "../hooks/useToast";
-const API = import.meta.env.VITE_API_BASE_URL;
+// const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function FacultySession() {
   const [year, setYear] = useState("");
@@ -21,26 +21,6 @@ export default function FacultySession() {
 
   const { showSuccess, showError } = useToast();
 
-  /* session — don’t start it */
-  // useEffect(() => {
-  //   (async () => {
-  //     try {
-  //       const token = localStorage.getItem("token");
-  //       const res = await axios.get(
-  //         "http://localhost:5000/faculty/activeSession",
-  //         { headers: { Authorization: `Bearer ${token}` } }
-  //       );
-
-  //       if (res.data.hasActiveSession) {
-  //         setCurrentSession(res.data.session);
-  //         showSuccess("Existing session detected. Start manually if needed.");
-  //       }
-  //     } catch {
-  //       console.log("No active session");
-  //     }
-  //   })();
-  // }, []);
-
   /* reset subject */
   useEffect(() => {
     setSubject("");
@@ -49,11 +29,11 @@ export default function FacultySession() {
   /* START TIMERS */
   const startTimers = () => {
     timerRef.current = setInterval(() => {
-      setElapsed(prev => prev + 1);
+      setElapsed((prev) => prev + 1);
     }, 1000);
 
     countdownRef.current = setInterval(() => {
-      setTimeLeft(prev => {
+      setTimeLeft((prev) => {
         if (prev === 120) setWarningActive(true);
         if (prev <= 1) {
           handleAutoClose();
@@ -85,7 +65,7 @@ export default function FacultySession() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        `${API}/faculty/openSession`,
+        'http://localhost:5000/faculty/openSession',
         { year, branch, subject, mode: isOnline ? "online" : "offline" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -108,7 +88,7 @@ export default function FacultySession() {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `${API}/faculty/closeSession`,
+        'http://localhost:5000/faculty/closeSession',
         { sessionId: currentSession?._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -128,13 +108,21 @@ export default function FacultySession() {
     await handleClose();
   };
 
-  const formatTime = s =>
-    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+  const formatTime = (s) =>
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(
+      2,
+      "0"
+    )}`;
 
   return (
-    <div className="container d-flex justify-content-center mt-5">
-      <div className="card p-4 shadow" style={{ width: 420 }}>
-        <h3 className="text-center text-primary mb-4">Faculty Control Panel</h3>
+    <div className="container d-flex justify-content-center mt-4 mt-md-5 px-2">
+      <div
+        className="card p-4 shadow w-100"
+        style={{ maxWidth: 420 }}
+      >
+        <h3 className="text-center text-primary mb-4">
+          Faculty Control Panel
+        </h3>
 
         <div className="text-center mb-3">
           <span
@@ -146,7 +134,12 @@ export default function FacultySession() {
           </span>
         </div>
 
-        <select disabled={sessionOpen} className="form-select mb-2" value={year} onChange={e => setYear(e.target.value)}>
+        <select
+          disabled={sessionOpen}
+          className="form-select mb-2"
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+        >
           <option value="">Select Year</option>
           <option>1st Year</option>
           <option>2nd Year</option>
@@ -154,7 +147,12 @@ export default function FacultySession() {
           <option>4th Year</option>
         </select>
 
-        <select disabled={sessionOpen} className="form-select mb-2" value={branch} onChange={e => setBranch(e.target.value)}>
+        <select
+          disabled={sessionOpen}
+          className="form-select mb-2"
+          value={branch}
+          onChange={(e) => setBranch(e.target.value)}
+        >
           <option value="">Select Branch</option>
           <option>CSE</option>
           <option>IT</option>
@@ -165,7 +163,12 @@ export default function FacultySession() {
         </select>
 
         {year === "3rd Year" && branch === "CSE" && (
-          <select disabled={sessionOpen} className="form-select mb-3" value={subject} onChange={e => setSubject(e.target.value)}>
+          <select
+            disabled={sessionOpen}
+            className="form-select mb-3"
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+          >
             <option value="">Select Subject</option>
             <option>Data Structures & Algorithms</option>
             <option>Operting System</option>
@@ -180,7 +183,12 @@ export default function FacultySession() {
             <h4 className={timeLeft <= 120 ? "text-danger" : "text-primary"}>
               ⏰ {formatTime(timeLeft)}
             </h4>
-            {warningActive && <div className="alert alert-warning">⚠️ Less than 2 minutes!</div>}
+
+            {warningActive && (
+              <div className="alert alert-warning mb-0">
+                ⚠️ Less than 2 minutes!
+              </div>
+            )}
           </div>
         )}
 

@@ -2,14 +2,13 @@ import React, { useState, useRef, useEffect } from "react";
 import { loadModels, detectFace, drawBoundingBox } from "../faceDetection";
 import useToast from "../hooks/useToast";
 import axios from "axios";
-const API = import.meta.env.VITE_API_BASE_URL;
+// const API = import.meta.env.VITE_API_BASE_URL;
 
 export default function StudentRegistration() {
   const [year2, setYear2] = useState("");
   const [branch2, setBranch2] = useState("");
   const [roll2, setRoll2] = useState("");
   // const [descriptor, setDescriptor] = useState(null);
-
 
   const [cameraOn, setCameraOn] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
@@ -20,7 +19,7 @@ export default function StudentRegistration() {
   const canvasRef = useRef(null);
   const intervalRef = useRef(null);
 
-  const {showSuccess, showError} = useToast();
+  const { showSuccess, showError } = useToast();
 
   // load models
   useEffect(() => {
@@ -82,16 +81,20 @@ export default function StudentRegistration() {
       }
 
       const descriptorArray = Array.from(detection.descriptor);
-      
+
       const token = localStorage.getItem("token");
-      await axios.post(`${API}/student/register`, {
-        year: year2,
-        branch: branch2,
-        rollno: roll2,
-        faceDescriptor: descriptorArray
-      },{
-        headers: { Authorization: `Bearer ${token}`}
-      });
+      await axios.post(
+        'http://localhost:5000/student/register',
+        {
+          year: year2,
+          branch: branch2,
+          rollno: roll2,
+          faceDescriptor: descriptorArray,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       showSuccess("Student registered successfully :)");
       // isStudent(true);
@@ -107,17 +110,15 @@ export default function StudentRegistration() {
     }
   };
 
-  
   return (
     <div
-      className="d-flex justify-content-center align-items-center"
+      className="d-flex justify-content-center align-items-center px-2 py-4"
       style={{ minHeight: "100vh", background: "rgba(240,240,240,0.9)" }}
     >
       <div
-        className="card shadow-lg p-4 border-0"
+        className="card shadow-lg border-0 w-100 p-3 p-md-4"
         style={{
           maxWidth: "430px",
-          width: "100%",
           borderRadius: "20px",
           background: "white",
         }}
@@ -179,7 +180,7 @@ export default function StudentRegistration() {
             <div className="d-flex justify-content-center mb-3">
               <button
                 type="button"
-                className="btn btn-success px-4 py-2 fw-bold shadow-sm"
+                className="btn btn-success px-4 py-2 fw-bold shadow-sm w-100 w-sm-auto"
                 onClick={() => setCameraOn(true)}
               >
                 📸 Start Video
@@ -189,7 +190,10 @@ export default function StudentRegistration() {
 
           {/* video & camera access */}
           {cameraOn && (
-            <div className="mb-3 text-center" style={{ position: "relative" }}>
+            <div
+              className="mb-3 text-center"
+              style={{ position: "relative" }}
+            >
               <video
                 ref={videoRef}
                 autoPlay
@@ -209,6 +213,7 @@ export default function StudentRegistration() {
                   left: 0,
                   width: "100%",
                   height: "100%",
+                  borderRadius: "12px",
                 }}
               />
             </div>
