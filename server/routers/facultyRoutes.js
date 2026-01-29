@@ -68,7 +68,7 @@ router.post("/openSession", auth, async (req, res) => {
   // existing session close
   await Session.updateMany(
     { facultyId: req.faculty.facultyId, isActive: true },
-    { isActive: false, closedAt: new Date() }
+    { isActive: false, endTime: new Date() }
   );
   
   const session = await Session.create({
@@ -76,7 +76,7 @@ router.post("/openSession", auth, async (req, res) => {
     year, branch, subject, mode,
     isActive: true,
     startTime: new Date(),
-    closedAt: null
+    endTime:  new Date(Date.now() + 15 * 60 * 1000)
   });
   
   res.json({ 
@@ -144,14 +144,21 @@ router.get("/activeSession", auth, async (req, res) => {
   const session = await Session.findOne({ 
     facultyId: req.faculty.facultyId, 
     isActive: true, 
-    closedAt: null
-  }).populate('facultyId');
+  }).sort({createdAt: -1});
 
   if(!session){
     return res.json({hasActiveSession:false});
   }
+  
+  // auto close
+  if (session.endTime && new Date() > session.endTime) {
+    session.isActive = false;
+    // session.closedAt = new Date();
+    await session.save();
+    return res.json({ hasActiveSession: false });
+  }
 
-  res.json({ hasActiveSession: true, session });
+  return res.json({ hasActiveSession: true, session });
 });
 
 // student attendance dash

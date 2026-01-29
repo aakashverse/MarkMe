@@ -84,7 +84,7 @@ export default function StudentRegistration() {
 
       const token = localStorage.getItem("token");
       await axios.post(
-        `${API}/student/register`,
+        `http://localhost:5000/student/register`,
         {
           year: year2,
           branch: branch2,

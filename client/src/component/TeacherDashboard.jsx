@@ -22,7 +22,7 @@ export default function TeacherDashboard(){
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await axios.post(`${API}/faculty/studentAttendance`,
+      const res = await axios.post(`http://localhost:5000/faculty/studentAttendance`,
         {rollno: rollNumber.trim()},
         { headers: { Authorization: `Bearer ${token}` } }
       );

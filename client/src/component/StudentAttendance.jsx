@@ -24,11 +24,12 @@ export default function StudentAttendance() {
 
   // check if session is active for atten.
   useEffect(() => {
+    if(!roll) return;
+
     const checkSession = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`${API}/student/activeSession`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await axios.get(`http://localhost:5000/student/activeSession`, {
+          params: {rollno : roll},
         });
 
         console.log('checking active session: ', res.data);
@@ -40,16 +41,16 @@ export default function StudentAttendance() {
           setActiveSessionId(null);
         }
       } catch (err) {
-        console.log("No active session");
+        console.log("No active session", err.message);
         setActiveSessionId(null);
       }
     };
 
     checkSession();
-    const interval = setInterval(checkSession, 5000); // poll every 10s
+    const interval = setInterval(checkSession, 5000); // poll every 5s
 
     return () => clearInterval(interval);
-  }, []);
+  }, [roll]);
 
   // load modesls
   useEffect(() => {
@@ -128,7 +129,7 @@ export default function StudentAttendance() {
       // Send to backend
       const token = localStorage.getItem("token");
       await axios.post(
-        `${API}/student/markAttendance`,
+        `http://localhost:5000/student/markAttendance`,
         {
           rollno: Number(roll),
           subject: subject1,
@@ -171,10 +172,10 @@ export default function StudentAttendance() {
             onChange={(e) => setSubject1(e.target.value)}
           >
             <option value="">Select Subject</option>
-            <option>Data Structures & Algorithms</option>
-            <option>Operating System</option>
+            <option>DSA</option>
+            <option>OS</option>
             <option>DBMS</option>
-            <option>Computer Networks</option>
+            <option>CN</option>
             <option>OOPS</option>
           </select>
 

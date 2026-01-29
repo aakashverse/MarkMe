@@ -65,7 +65,7 @@ export default function FacultySession() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        `${API}/faculty/openSession`,
+        `http://localhost:5000/faculty/openSession`,
         { year, branch, subject, mode: isOnline ? "online" : "offline" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -88,7 +88,7 @@ export default function FacultySession() {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `${API}/faculty/closeSession`,
+        `http://localhost:5000/faculty/closeSession`,
         { sessionId: currentSession?._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -170,9 +170,9 @@ export default function FacultySession() {
             onChange={(e) => setSubject(e.target.value)}
           >
             <option value="">Select Subject</option>
-            <option>Data Structures & Algorithms</option>
-            <option>Operting System</option>
-            <option>Computer Networks</option>
+            <option>DSA</option>
+            <option>OS</option>
+            <option>CN</option>
             <option>DBMS</option>
             <option>OOPS</option>
           </select>
