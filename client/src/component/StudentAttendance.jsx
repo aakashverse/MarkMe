@@ -29,7 +29,7 @@ export default function StudentAttendance() {
 
     const checkSession = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/student/activeSession`, {
+        const res = await axios.get(`${API}/student/activeSession`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -129,7 +129,7 @@ export default function StudentAttendance() {
 
       // Send to backend
       await axios.post(
-        `http://localhost:5000/student/markAttendance`,
+        `${API}/student/markAttendance`,
         {
           rollno: Number(roll),
           subject: subject1,

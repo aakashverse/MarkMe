@@ -19,7 +19,7 @@ export default function StudentLogin() {
 
     try {
       setLoading(true);
-      const res = await axios.post(`http://localhost:5000/student/login`, {
+      const res = await axios.post(`${API}/student/login`, {
         rollno: Number(rollno),
         password: password,
       });

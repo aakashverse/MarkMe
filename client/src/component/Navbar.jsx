@@ -10,15 +10,15 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.clear();
     showSuccess("Logged out successfuly!");
-    navigate("/"); // cleaner than reload
+    navigate("/");   // clean than reload
   };
 
   const closeNavbar = () => {
-  const nav = document.getElementById("navbarNav");
-  if (nav?.classList.contains("show")) {
-    nav.classList.remove("show");
-  }
-};
+    const nav = document.getElementById("navbarNav");
+    if (nav?.classList.contains("show")) {
+      nav.classList.remove("show");
+    }
+  };
 
 
   return (

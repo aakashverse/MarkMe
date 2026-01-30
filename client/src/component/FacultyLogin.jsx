@@ -24,7 +24,7 @@ function FacultyLogin() {
       setLoading(true);
 
       const res = await axios.post(
-        `http://localhost:5000/login`,
+        `${API}/login`,
         { facultyId, password },
         { withCredentials: true }
       );

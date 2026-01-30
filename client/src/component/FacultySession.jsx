@@ -65,7 +65,7 @@ export default function FacultySession() {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        `http://localhost:5000/faculty/openSession`,
+        `${API}/faculty/openSession`,
         { year, branch, subject, mode: isOnline ? "online" : "offline" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -88,7 +88,7 @@ export default function FacultySession() {
     try {
       const token = localStorage.getItem("token");
       await axios.post(
-        `http://localhost:5000/faculty/closeSession`,
+        `${API}/faculty/closeSession`,
         { sessionId: currentSession?._id },
         { headers: { Authorization: `Bearer ${token}` } }
       );
