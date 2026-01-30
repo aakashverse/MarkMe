@@ -4,6 +4,7 @@ import useToast from "../hooks/useToast";
 export default function Navbar() {
   const { showSuccess } = useToast();
   const token = localStorage.getItem("token");
+  const studentToken = localStorage.getItem("studentToken");
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -11,6 +12,14 @@ export default function Navbar() {
     showSuccess("Logged out successfuly!");
     navigate("/"); // cleaner than reload
   };
+
+  const closeNavbar = () => {
+  const nav = document.getElementById("navbarNav");
+  if (nav?.classList.contains("show")) {
+    nav.classList.remove("show");
+  }
+};
+
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
@@ -33,48 +42,55 @@ export default function Navbar() {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav mx-auto gap-3 text-center text-lg-start">
             <li className="nav-item">
-              <Link className="nav-link fw-semibold" to="/">
+              <Link onClick={closeNavbar} className="nav-link fw-semibold" to="/">
                 Home
               </Link>
             </li>
 
             {/* show attendance report to everyone */}
             <li className="nav-item">
-              <Link className="nav-link fw-semibold" to="/teacher-dashboard">
+              <Link onClick={closeNavbar} className="nav-link fw-semibold" to="/teacher-dashboard">
                 Dashboard
               </Link>
             </li>
 
             <li className="nav-item">
-              <Link className="nav-link fw-semibold" to="/about">
+              <Link onClick={closeNavbar} className="nav-link fw-semibold" to="/about">
                 About
               </Link>
             </li>
           </ul>
 
-          <div className="d-flex flex-column flex-lg-row gap-2 align-items-stretch align-items-lg-center mt-3 mt-lg-0">
-            {token && (
+          <div className="d-flex flex-column flex-lg-row gap-3 align-items-stretch align-items-lg-center mt-3 mt-lg-0">
+            {studentToken && (
               <Link
-                to="/student-login"
+                onClick={closeNavbar}
+                to="/student-attendance"
                 className="btn btn-outline-primary w-100 w-lg-auto"
               >
-                Mark Att.
+                Mark Attendance
               </Link>
             )}
 
             {/* jaroori -> token tracks teacher avail. not student */}
 
             {/* if faculty logged in */}
-            {token && (
+            {!studentToken && (
               <>
                 <Link
-                  to="/student-registration"
+                  onClick={closeNavbar}
+                  to="/student-login"
                   className="btn btn-dark w-100 w-lg-auto"
                 >
-                  Register Student
+                  Student Signup /Login
                 </Link>
+              </>
+            )}
 
-                <Link
+             {token && (
+              <>
+              <Link
+                  onClick={closeNavbar}
                   to="/faculty-session"
                   className="btn btn-outline-success w-100 w-lg-auto"
                 >
@@ -87,12 +103,13 @@ export default function Navbar() {
                 >
                   Logout
                 </button>
-              </>
-            )}
+                </>
+             )}
 
             {!token && (
               <>
                 <Link
+                  onClick={closeNavbar}
                   to="/faculty-login"
                   className="btn btn-success w-100 w-lg-auto"
                 >

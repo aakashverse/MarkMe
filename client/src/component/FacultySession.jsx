@@ -115,7 +115,7 @@ export default function FacultySession() {
     )}`;
 
   return (
-    <div className="container d-flex justify-content-center mt-4 mt-md-5 px-2">
+    <div className="container d-flex justify-content-center mt-4 mt-md-5 py-4 px-2">
       <div
         className="card p-4 shadow w-100"
         style={{ maxWidth: 420 }}

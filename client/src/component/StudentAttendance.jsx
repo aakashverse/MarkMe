@@ -21,6 +21,7 @@ export default function StudentAttendance() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const intervalRef = useRef(null);
+  const token = localStorage.getItem("studentToken");
 
   // check if session is active for atten.
   useEffect(() => {
@@ -29,7 +30,7 @@ export default function StudentAttendance() {
     const checkSession = async () => {
       try {
         const res = await axios.get(`http://localhost:5000/student/activeSession`, {
-          params: {rollno : roll},
+          headers: { Authorization: `Bearer ${token}` },
         });
 
         console.log('checking active session: ', res.data);
@@ -127,7 +128,6 @@ export default function StudentAttendance() {
       const faceDescriptor = Array.from(detection.descriptor);
 
       // Send to backend
-      const token = localStorage.getItem("token");
       await axios.post(
         `http://localhost:5000/student/markAttendance`,
         {
@@ -142,6 +142,7 @@ export default function StudentAttendance() {
       );
 
       showSuccess(`Attendance marked for ${subject1}`);
+      localStorage.removeItem("studentRegistered");
       navigate("/");
       setRoll("");
       setSubject1("");
@@ -154,7 +155,7 @@ export default function StudentAttendance() {
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center py-4 px-2">
+    <div className="container d-flex justify-content-center align-items-center mt-5 py-5 px-2">
       <div className="card p-3 p-md-4 shadow w-100" style={{ maxWidth: 400 }}>
         <h3 className="text-center mb-3">🎓 Mark Your Presence</h3>
 
@@ -192,7 +193,7 @@ export default function StudentAttendance() {
               className="btn btn-success w-100 mb-2"
               onClick={() => setCameraOn(true)}
             >
-              📸 Start Camera
+              📸 Verify Face
             </button>
           ) : (
             <div style={{ position: "relative", height: "200px" }}>

@@ -1,17 +1,23 @@
 const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 const Student = require("../models/Student.models");
 const Session = require("../models/Session.models");
 const Attendance = require("../models/Attendance.models");
-const auth = require("../Middlewares/auth");
+const studentAuth = require("../Middlewares/studentAuth")
+
+const generateStudentToken = (studentId) => {
+  return jwt.sign({ studentId }, process.env.JWT_SECRET, { expiresIn: "7d" });
+};
 
 // register student
 router.post("/register", async(req, res) => {
   try {
-    // console.log(req.body);
-    const { year, branch, rollno, faceDescriptor } = req.body;
+    console.log("register body: ", req.body);
+    const { year, branch, rollno, faceDescriptor, password } = req.body;
 
-    if (!year || !branch || !rollno || !faceDescriptor?.length) {
+    if (!year || !branch || !rollno || !faceDescriptor?.length || !password) {
       return res.status(400).json({ error: "Missing fields" });
     }
 
@@ -19,13 +25,15 @@ router.post("/register", async(req, res) => {
     if (exists) {
       return res.status(409).json({ error: "Student already exists" });
     }
-
+    const hashedPassword = await bcrypt.hash(password, 10);
     const student = await Student.create({
       year,
       branch,
       rollno,
+      password: hashedPassword,
       faceDescriptor,
     });
+    console.log("student regis: ", student);
 
     res.status(201).json({ message: "Student registered", student });
   } catch (err) {
@@ -34,61 +42,83 @@ router.post("/register", async(req, res) => {
   }
 });
 
+// login
+router.post("/login", async (req, res) => {
+  try{
+
+    const { rollno, password } = req.body;
+    if (!rollno || !password) {
+      return res.status(400).json({ error: "Rollno and password required" });
+    }
+    
+    const student = await Student.findOne({ rollno: Number(rollno) });
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+    
+    const match = await bcrypt.compare(password, student.password);
+    if (!match) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+    
+    const token = generateStudentToken(student._id);
+    
+    res.json({
+      message: "Login successful",
+      token,
+      student: {
+        id: student._id,
+        rollno: student.rollno,
+        year: student.year,
+        branch: student.branch,
+      },
+    });
+    }catch (err) {
+      console.log("Student login error:", err.message);
+      res.status(500).json({ error: "Server error" });
+    }
+});
 
 // student check active session
-router.get("/activeSession", async (req, res) => {
+router.get("/activeSession", studentAuth, async (req, res) => {
   try {
-    const { rollno } = req.query;  // OR req.body
-    // if (!rollno) return res.status(400).json({ error: "rollno required" });
-
-    const student = await Student.findOne({rollno : Number(rollno)});
-    if (!student) return res.status(404).json({ error: "Student not found" });
-
-    const session = await Session.findOne({
-      isActive: true,
-      year: student.year,
-      branch: student.branch,
-    }).sort({ createdAt: -1 });
+    // find active session
+    const session = await Session.findOne({ isActive: true });
 
     if (!session) {
       return res.json({ hasActiveSession: false });
     }
-    
-    // auto close session
+
+    // optional: if session expired
     if (session.endTime && new Date() > session.endTime) {
       session.isActive = false;
-      // session.closedAt = new Date();
+      session.closedAt = new Date();
       await session.save();
-  
       return res.json({ hasActiveSession: false });
     }
 
-    res.json({
+    return res.json({
       hasActiveSession: true,
-      sessionId: session?._id,
-      subject: session?.subject,
-      year: session?.year,
-      branch: session?.branch,
-      mode: session?.mode,
+      sessionId: session._id,
+      subject: session.subject,
     });
   } catch (err) {
-    console.log("activesess error:", err.message);
-    res.status(500).json({ error: err.message });
+    console.log("activeSession error:", err.message);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-
 // mark attendance
-router.post('/markAttendance', async (req, res) => {
+router.post('/markAttendance', studentAuth, async (req, res) => {
   try {
-    const { rollno, subject, sessionId, descriptor } = req.body;
+    const {  subject, sessionId, descriptor } = req.body;
     console.log('markAtt reached: ', req.body);
     
-    if (!rollno || !subject || !sessionId || !Array.isArray(descriptor) || descriptor.length !== 128) {
+    if (!subject || !sessionId || !Array.isArray(descriptor) || descriptor.length !== 128) {
       return res.status(400).json({ error: "Invalid or missing fields" });
     }
 
-    const student = await Student.findOne({ rollno: Number(rollno)});
+    const student = req.student;
     if (!student) {
       return res.status(404).json({ error: "Student not found" });
     }
@@ -100,6 +130,11 @@ router.post('/markAttendance', async (req, res) => {
     // if (!Array.isArray(student.attendance)) student.attendance = [];
 
     const session = await Session.findById(sessionId);
+    if(!session || !session.isActive) {
+      return res.status(400).json({ error: "No active session" });
+    }
+    
+    // session expiry check
     if (session.endTime && new Date() > session.endTime) {
       session.isActive = false;
       session.closedAt = new Date();
@@ -107,11 +142,7 @@ router.post('/markAttendance', async (req, res) => {
       return res.status(400).json({ error: "Session expired" });
     }
  
-    // if(!session || !session.isActive) {
-    //   return res.status(400).json({ error: "No active session" });
-    // }
-    
-    // subject match with session subject
+    // subject match 
     if(session.subject !== subject) {
       return res.status(400).json({ error: "Subject mismatch with active session" });
     }
@@ -145,13 +176,9 @@ router.post('/markAttendance', async (req, res) => {
       student.attendance[idx].present = (Number(student.attendance[idx].present) || 0) + 1;
     }
     
-    // IMPORTANT
+    // imp
     student.markModified("attendance");
-    
     await student.save();
-
-    
-    console.log(`Updated ${subject}: ${subjectRecord.present}/${subjectRecord.total}`);
 
     res.status(201).json({ 
       message: "Attendance marked successfully!", 

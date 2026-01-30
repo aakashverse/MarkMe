@@ -80,7 +80,7 @@ function FacultyLogin() {
           </button>
 
           <p className="text-center mt-3">
-            New faculty? <Link to="/Faculty-Registration">Sign up</Link>
+            New faculty? <Link to="/faculty-registration">Sign up</Link>
           </p>
         </div>
       </form>

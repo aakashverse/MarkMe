@@ -10,9 +10,10 @@ import FacultySession from "./component/FacultySession.jsx";
 import StudentAttendance from './component/StudentAttendance.jsx'
 import TeacherDashboard from './component/TeacherDashboard.jsx'
 import AboutUs from './component/About.jsx'
-import StudentRegistration from './component/StudentRegistrationForm.jsx'
+import StudentRegistration from './component/StudentRegistration.jsx'
 import FacultyLogin from './component/FacultyLogin.jsx'
 import FacultyRegistration from './component/FacultyRegistration.jsx'
+import StudentLogin from './component/StudentLogin.jsx'
 
 
   let router = createBrowserRouter([
@@ -31,8 +32,12 @@ import FacultyRegistration from './component/FacultyRegistration.jsx'
         element: <FacultySession />,
       },
       {
+        path: "/student-registration",
+        element: <StudentRegistration />,
+      },
+      {
         path: "/student-login",
-        element: <StudentAttendance />,
+        element: <StudentLogin />,
       },
       {
         path: "/teacher-dashboard",
@@ -53,6 +58,10 @@ import FacultyRegistration from './component/FacultyRegistration.jsx'
       {
         path: "/faculty-registration",
         element: <FacultyRegistration />
+      },
+      {
+        path: "/student-attendance",
+        element: <StudentAttendance />
       }
     ],
   },

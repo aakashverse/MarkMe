@@ -73,7 +73,7 @@ export default function TeacherDashboard(){
   };
 
    return (
-  <div className="container-fluid mt-4 px-2 px-md-5 overflow-hidden">
+  <div className="container-fluid mt-5 px-2 px-md-5 overflow-hidden">
     <h2 className="text-center mb-4">Attendance Dashboard</h2>
 
     <div className="row my-4 justify-content-center g-2">

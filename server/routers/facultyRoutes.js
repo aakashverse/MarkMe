@@ -5,13 +5,14 @@ const Faculty = require('../models/Faculty.models');
 const Session = require('../models/Session.models');
 const Student = require("../models/Student.models")
 const Attendance = require("../models/Attendance.models")
-const auth = require('../Middlewares/auth');
+const facultyAuth = require('../Middlewares/facultyAuth');
+const studentAuth = require("../Middlewares/studentAuth");
 
 // faculty signup
 router.post("/signup", async (req, res) => {
-  console.log('faculty sign-in reached');
+  // console.log('faculty sign-in reached');
   const { facultyId, password } = req.body;
-  console.log(req.body);
+  // console.log(req.body);
   
   try{
       const exists = await Faculty.findOne({ facultyId });
@@ -61,7 +62,7 @@ router.post("/login", async (req, res) => {
 
 // session routes
 // session start
-router.post("/openSession", auth, async (req, res) => {
+router.post("/openSession", facultyAuth, async (req, res) => {
   const { year, branch, subject, mode } = req.body;
   console.log(req.body);
   
@@ -87,7 +88,7 @@ router.post("/openSession", auth, async (req, res) => {
 });
 
 // Close session
-router.post("/closeSession", auth, async(req, res) => {
+router.post("/closeSession", facultyAuth, async(req, res) => {
   const {sessionId} = req.body;
 
   const session = await Session.findById(sessionId);
@@ -140,7 +141,7 @@ router.post("/closeSession", auth, async(req, res) => {
 });
 
 // Check active session (for dashboard)
-router.get("/activeSession", auth, async (req, res) => {
+router.get("/activeSession", facultyAuth, async (req, res) => {
   const session = await Session.findOne({ 
     facultyId: req.faculty.facultyId, 
     isActive: true, 
@@ -193,7 +194,7 @@ router.get("/activeSession", auth, async (req, res) => {
 
 // });
 
-router.post('/studentAttendance', auth, async (req, res) => {
+router.post('/studentAttendance', facultyAuth, async (req, res) => {
   try {
     const { rollno } = req.body;
     

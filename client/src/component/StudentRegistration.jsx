@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { loadModels, detectFace, drawBoundingBox } from "../faceDetection";
 import useToast from "../hooks/useToast";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 const API = import.meta.env.VITE_API_BASE_URL;
 
@@ -8,7 +9,9 @@ export default function StudentRegistration() {
   const [year2, setYear2] = useState("");
   const [branch2, setBranch2] = useState("");
   const [roll2, setRoll2] = useState("");
+  const [password2, setPassword2] = useState("");
   // const [descriptor, setDescriptor] = useState(null);
+  const navigate = useNavigate();
 
   const [cameraOn, setCameraOn] = useState(false);
   const [modelsLoaded, setModelsLoaded] = useState(false);
@@ -61,7 +64,7 @@ export default function StudentRegistration() {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    if (!year2 || !branch2 || !roll2) {
+    if (!year2 || !branch2 || !roll2 || !password2) {
       showError("Please fill all fields");
       return;
     }
@@ -88,7 +91,8 @@ export default function StudentRegistration() {
         {
           year: year2,
           branch: branch2,
-          rollno: roll2,
+          rollno: Number(roll2),
+          password: password2,
           faceDescriptor: descriptorArray,
         },
         {
@@ -97,13 +101,14 @@ export default function StudentRegistration() {
       );
 
       showSuccess("Student registered successfully :)");
-      // isStudent(true);
+      navigate("/student-login");
       setCameraOn(false);
       setYear2("");
       setRoll2("");
       setBranch2("");
+      setPassword2("");
     } catch (err) {
-      console.error("Register Error:", err);
+      console.error("Register Error:", err.message);
       showError("Registration failed :(");
     } finally {
       setLoading(false);
@@ -175,6 +180,17 @@ export default function StudentRegistration() {
             />
           </div>
 
+          <div className="mb-3">
+            <label className="form-label fw-semibold">Password</label>
+            <input
+              type="password"
+              className="form-control shadow-sm"
+              placeholder="Enter Password"
+              value={password2}
+              onChange={(e) => setPassword2(e.target.value)}
+            />
+          </div>
+
           {/* camra btn */}
           {!cameraOn && (
             <div className="d-flex justify-content-center mb-3">
@@ -183,7 +199,7 @@ export default function StudentRegistration() {
                 className="btn btn-success px-4 py-2 fw-bold shadow-sm w-100 w-sm-auto"
                 onClick={() => setCameraOn(true)}
               >
-                📸 Start Video
+                📸 Register Face
               </button>
             </div>
           )}
@@ -224,7 +240,7 @@ export default function StudentRegistration() {
             className="btn btn-primary w-100 py-2 fw-semibold shadow-sm"
             disabled={loading}
           >
-            {loading ? "🔍 Capturing Face..." : "✅ Register Student"}
+            {loading ? "🔍 Capturing Face..." : " Register Student"}
           </button>
         </form>
       </div>
