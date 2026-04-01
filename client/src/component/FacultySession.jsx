@@ -109,10 +109,19 @@ export default function FacultySession() {
   };
 
   const formatTime = (s) =>
-    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(
-      2,
-      "0"
-    )}`;
+  `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(
+    2,
+    "0"
+  )}`;
+
+  const subjectsByBranch = {
+    CSE: ["DSA", "OS", "CN", "DBMS", "OOPS"],
+    IT: ["DSA", "OS", "CN", "DBMS", "OOPS"],
+    ECE: ["Digital Electronics", "Signals", "Communication", "VLSI"],
+    Electronics: ["Analog Circuits", "Microprocessors", "Embedded Systems"],
+    ME: ["Thermodynamics", "Fluid Mechanics", "Machine Design"],
+    CE: ["Structural Engineering", "Geotechnical", "Transportation", "Environmental"],
+  };
 
   return (
     <div className="container d-flex justify-content-center mt-4 mt-md-5 py-4 px-2">
@@ -141,10 +150,7 @@ export default function FacultySession() {
           onChange={(e) => setYear(e.target.value)}
         >
           <option value="">Select Year</option>
-          <option>1st Year</option>
-          <option>2nd Year</option>
           <option>3rd Year</option>
-          <option>4th Year</option>
         </select>
 
         <select
@@ -162,7 +168,7 @@ export default function FacultySession() {
           <option>CE</option>
         </select>
 
-        {year === "3rd Year" && branch === "CSE" && (
+        {year === "3rd Year" && subjectsByBranch[branch] && (
           <select
             disabled={sessionOpen}
             className="form-select mb-3"
@@ -170,11 +176,9 @@ export default function FacultySession() {
             onChange={(e) => setSubject(e.target.value)}
           >
             <option value="">Select Subject</option>
-            <option>DSA</option>
-            <option>OS</option>
-            <option>CN</option>
-            <option>DBMS</option>
-            <option>OOPS</option>
+            {subjectsByBranch[branch].map((sub, index) => (
+              <option key={index}>{sub}</option>
+            ))}
           </select>
         )}
 
