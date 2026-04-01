@@ -142,10 +142,7 @@ export default function StudentRegistration() {
               onChange={(e) => setYear2(e.target.value)}
             >
               <option value="">Choose...</option>
-              <option>1st Year</option>
-              <option>2nd Year</option>
               <option>3rd Year</option>
-              <option>4th Year</option>
             </select>
           </div>
 
