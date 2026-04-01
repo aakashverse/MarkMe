@@ -1,5 +1,6 @@
 import React from "react";
 import Navbar from "./Navbar";
+import mark_me_poster from "../assets/mark_me_poster.jpeg"
 
 export default function Home() {
   const features = [
@@ -63,7 +64,7 @@ export default function Home() {
                 }}
               >
                 <img
-                  src="https://kivtas.com/wp-content/uploads/2021/06/AI-face-biometric-attendance-system.png"
+                  src={mark_me_poster}
                   alt="Preview"
                   style={{
                     width: "100%",
