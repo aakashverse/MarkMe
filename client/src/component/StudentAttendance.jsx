@@ -50,7 +50,7 @@ export default function StudentAttendance() {
     const interval = setInterval(checkSession, 5000); // poll every 5s
 
     return () => clearInterval(interval);
-  }, [roll]);
+  }, []);
 
   // load modesls
   useEffect(() => {
@@ -172,11 +172,7 @@ export default function StudentAttendance() {
             onChange={(e) => setSubject1(e.target.value)}
           >
             <option value="">Select Subject</option>
-            <option>DSA</option>
-            <option>OS</option>
-            <option>DBMS</option>
-            <option>CN</option>
-            <option>OOPS</option>
+            <option>{subject1}</option>
           </select>
 
           {/* // cam status */}
