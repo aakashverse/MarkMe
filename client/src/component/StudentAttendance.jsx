@@ -172,7 +172,7 @@ export default function StudentAttendance() {
             className="form-select mb-3"
             value={subject1}
             readOnly
-            placeholder="Subject (auto-detecting..)"
+            placeholder="Subject (auto-detected)"
           />
 
           {/* // cam status */}
