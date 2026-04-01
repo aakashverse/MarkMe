@@ -37,6 +37,7 @@ export default function StudentAttendance() {
         if (res.data.hasActiveSession) {
           setActiveSessionId(res.data.sessionId);
           setSubject1(res.data.subject || "");
+          clearInterval(interval); // stop polling
         } else {
           setActiveSessionId(null);
         }
@@ -50,7 +51,7 @@ export default function StudentAttendance() {
     const interval = setInterval(checkSession, 5000); // poll every 5s
 
     return () => clearInterval(interval);
-  }, []);
+  }, [roll]);
 
   // load modesls
   useEffect(() => {
@@ -161,19 +162,17 @@ export default function StudentAttendance() {
         <form onSubmit={handleSubmit}>
           <input
             className="form-control mb-2"
-            placeholder="Roll Number"
             value={roll}
+            placeholder="Roll Number"
             onChange={(e) => setRoll(e.target.value)}
           />
 
-          <select
+          <input
             className="form-select mb-3"
             value={subject1}
-            onChange={(e) => setSubject1(e.target.value)}
-          >
-            <option value="">Select Subject</option>
-            <option>{subject1}</option>
-          </select>
+            readOnly
+            placeholder="Subject (auto-detected)"
+          />
 
           {/* // cam status */}
           {!activeSessionId && (
