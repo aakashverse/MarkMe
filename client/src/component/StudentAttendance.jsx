@@ -37,18 +37,19 @@ export default function StudentAttendance() {
         if (res.data.hasActiveSession) {
           setActiveSessionId(res.data.sessionId);
           setSubject1(res.data.subject || "");
-          clearInterval(interval); // stop polling
         } else {
           setActiveSessionId(null);
+          setSubject1("");
         }
       } catch (err) {
         console.log("No active session", err.message);
         setActiveSessionId(null);
+        setSubject1("");
       }
     };
 
     checkSession();
-    const interval = setInterval(checkSession, 5000); // poll every 5s
+    const interval = setInterval(checkSession, 3000); // poll every 5s
 
     return () => clearInterval(interval);
   }, [roll]);
@@ -171,7 +172,7 @@ export default function StudentAttendance() {
             className="form-select mb-3"
             value={subject1}
             readOnly
-            placeholder="Subject (auto-detected)"
+            placeholder="Subject (auto-detecting..)"
           />
 
           {/* // cam status */}
