@@ -144,13 +144,13 @@ export default function StudentAttendance() {
       showSuccess(`Attendance marked for ${subject1}`);
       localStorage.removeItem("studentRegistered");
       navigate("/");
-      setRoll("");
-      setSubject1("");
     } catch (err) {
       console.error(err.response?.data);
       showError("Attendance failed!");
     } finally {
       setLoading(false);
+      setRoll("");
+      setSubject1("");
     }
   };
 
